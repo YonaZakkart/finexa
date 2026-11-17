@@ -1,24 +1,24 @@
-import { ArrowRight, CheckCircle2, PlusCircle, SkipForward } from 'lucide-react';
-import { useState } from 'react';
+import { ArrowRight, CheckCircle2, PlusCircle, SkipForward, Trash2 } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { updateSettings } from '@/features/settings/settings.service';
+import { roundMoney } from '@/lib/money';
+import { completeOnboarding, type OnboardingProfile, skipOnboarding } from './onboarding.service';
 
 type Step = 'welcome' | 'profile' | 'employment' | 'salary' | 'balance' | 'debts' | 'complete';
+type PendingAction = 'finish' | 'skip';
 
-const STEPS: Step[] = [
-  'welcome',
-  'profile',
-  'employment',
-  'salary',
-  'balance',
-  'debts',
-  'complete',
-];
+const BASE_STEPS: Step[] = ['welcome', 'profile', 'employment', 'balance', 'debts', 'complete'];
+
+function parseAmount(value: string): number {
+  const parsed = Number.parseFloat(value);
+
+  return Number.isFinite(parsed) && parsed > 0 ? roundMoney(parsed) : 0;
+}
 
 export function Onboarding() {
   const { t } = useTranslation('onboarding');
@@ -33,32 +33,115 @@ export function Onboarding() {
   const [salaryFrequency, setSalaryFrequency] = useState<'monthly' | 'biweekly'>('monthly');
   const [paymentDay, setPaymentDay] = useState('');
   const [balance, setBalance] = useState('');
+  const [bank, setBank] = useState('');
+  const [cash, setCash] = useState('');
+  const [showBankCash, setShowBankCash] = useState(false);
   const [debts, setDebts] = useState<Array<{ id: string; name: string; amount: string }>>([
     { id: crypto.randomUUID(), name: '', amount: '' },
   ]);
+  const [pendingAction, setPendingAction] = useState<PendingAction | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
-  const currentStep = STEPS[stepIndex];
-  const isLastStep = stepIndex === STEPS.length - 1;
+  const steps = useMemo<Step[]>(
+    () =>
+      employmentStatus === 'employed'
+        ? ['welcome', 'profile', 'employment', 'salary', 'balance', 'debts', 'complete']
+        : BASE_STEPS,
+    [employmentStatus]
+  );
 
-  const handleNext = async () => {
-    if (isLastStep) {
-      await updateSettings({
-        onboardingCompleted: true,
-        userName: userName || undefined,
-        employmentStatus,
-        salary: salary ? parseFloat(salary) : undefined,
-        salaryFrequency,
-        paymentDates: paymentDay ? [paymentDay] : undefined,
+  const safeStepIndex = Math.min(stepIndex, steps.length - 1);
+  const currentStep = steps[safeStepIndex];
+  const isLastStep = safeStepIndex === steps.length - 1;
+  const isSubmitting = pendingAction !== null;
+
+  const hasIncompleteDebt = debts.some((debt) => {
+    const hasName = debt.name.trim().length > 0;
+    const hasAmount = parseAmount(debt.amount) > 0;
+
+    return hasName !== hasAmount;
+  });
+
+  const buildProfile = (): OnboardingProfile => {
+    const profile: OnboardingProfile = { employmentStatus };
+    const name = userName.trim();
+
+    if (name) {
+      profile.userName = name;
+    }
+
+    if (employmentStatus === 'employed') {
+      const salaryValue = parseAmount(salary);
+
+      if (salaryValue > 0) {
+        profile.salary = salaryValue;
+      }
+
+      profile.salaryFrequency = salaryFrequency;
+
+      const day = Number.parseInt(paymentDay, 10);
+
+      if (Number.isInteger(day) && day >= 1 && day <= 31) {
+        profile.paymentDates = [String(day)];
+      }
+    }
+
+    return profile;
+  };
+
+  const handleFinish = async () => {
+    if (isSubmitting) return;
+
+    setPendingAction('finish');
+    setError(null);
+
+    try {
+      await completeOnboarding({
+        profile: buildProfile(),
+        initialBalance: parseAmount(balance),
+        debts: debts
+          .map((debt) => ({ name: debt.name.trim(), amount: parseAmount(debt.amount) }))
+          .filter((debt) => debt.name.length > 0 || debt.amount > 0),
       });
-      navigate('/');
-    } else {
-      setStepIndex((i) => i + 1);
+      navigate('/', { replace: true });
+    } catch {
+      setError(t('saveError'));
+    } finally {
+      setPendingAction(null);
     }
   };
 
   const handleSkip = async () => {
-    await updateSettings({ onboardingCompleted: true });
-    navigate('/');
+    if (isSubmitting) return;
+
+    setPendingAction('skip');
+    setError(null);
+
+    try {
+      await skipOnboarding();
+      navigate('/', { replace: true });
+    } catch {
+      setError(t('saveError'));
+    } finally {
+      setPendingAction(null);
+    }
+  };
+
+  const handleNext = () => {
+    if (isLastStep) {
+      void handleFinish();
+      return;
+    }
+
+    setStepIndex((index) => Math.min(index + 1, steps.length - 1));
+  };
+
+  const handleBankCashChange = (nextBank: string, nextCash: string) => {
+    setBank(nextBank);
+    setCash(nextCash);
+
+    const total = roundMoney(parseAmount(nextBank) + parseAmount(nextCash));
+    setBalance(total > 0 ? String(total) : '');
   };
 
   const renderStep = () => {
@@ -153,9 +236,47 @@ export function Onboarding() {
               step="0.01"
               min="0"
               value={balance}
-              onChange={(e) => setBalance(e.target.value)}
+              onChange={(e) => {
+                setBalance(e.target.value);
+                setBank('');
+                setCash('');
+              }}
               placeholder="0.00"
             />
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowBankCash((value) => !value)}
+              aria-expanded={showBankCash}
+              aria-controls="bank-cash-fields"
+            >
+              {showBankCash ? t('hideBankCash') : t('addBankCash')}
+            </Button>
+            {showBankCash ? (
+              <div id="bank-cash-fields" className="space-y-3">
+                <Input
+                  label={t('bank')}
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0"
+                  value={bank}
+                  onChange={(e) => handleBankCashChange(e.target.value, cash)}
+                  placeholder="0.00"
+                />
+                <Input
+                  label={t('cash')}
+                  type="number"
+                  inputMode="decimal"
+                  step="0.01"
+                  min="0"
+                  value={cash}
+                  onChange={(e) => handleBankCashChange(bank, e.target.value)}
+                  placeholder="0.00"
+                />
+                <p className="text-xs text-text-muted">{t('bankCashHint')}</p>
+              </div>
+            ) : null}
             <p className="text-xs text-text-muted">{t('balanceHint')}</p>
           </Card>
         );
@@ -169,42 +290,66 @@ export function Onboarding() {
               <Button
                 variant="ghost"
                 size="sm"
-                onClick={() => {
-                  setDebts([...debts, { id: crypto.randomUUID(), name: '', amount: '' }]);
-                }}
+                onClick={() =>
+                  setDebts((current) => [
+                    ...current,
+                    { id: crypto.randomUUID(), name: '', amount: '' },
+                  ])
+                }
               >
                 <PlusCircle aria-hidden="true" className="size-4" />
                 {t('addDebt')}
               </Button>
             </header>
             {debts.map((debt) => (
-              <div key={debt.id} className="flex gap-2">
-                <Input
-                  label={t('debtName')}
-                  placeholder={t('debtNamePlaceholder')}
-                  value={debt.name}
-                  onChange={(e) => {
-                    setDebts(
-                      debts.map((d) => (d.id === debt.id ? { ...d, name: e.target.value } : d))
-                    );
-                  }}
-                />
-                <Input
-                  label={t('debtAmount')}
-                  type="number"
-                  inputMode="decimal"
-                  step="0.01"
-                  min="0"
-                  placeholder="0.00"
-                  value={debt.amount}
-                  onChange={(e) => {
-                    setDebts(
-                      debts.map((d) => (d.id === debt.id ? { ...d, amount: e.target.value } : d))
-                    );
-                  }}
-                />
+              <div key={debt.id} className="flex items-end gap-2">
+                <div className="flex-1">
+                  <Input
+                    label={t('debtName')}
+                    placeholder={t('debtNamePlaceholder')}
+                    value={debt.name}
+                    onChange={(e) =>
+                      setDebts((current) =>
+                        current.map((item) =>
+                          item.id === debt.id ? { ...item, name: e.target.value } : item
+                        )
+                      )
+                    }
+                  />
+                </div>
+                <div className="flex-1">
+                  <Input
+                    label={t('debtAmount')}
+                    type="number"
+                    inputMode="decimal"
+                    step="0.01"
+                    min="0"
+                    placeholder="0.00"
+                    value={debt.amount}
+                    onChange={(e) =>
+                      setDebts((current) =>
+                        current.map((item) =>
+                          item.id === debt.id ? { ...item, amount: e.target.value } : item
+                        )
+                      )
+                    }
+                  />
+                </div>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() =>
+                    setDebts((current) => current.filter((item) => item.id !== debt.id))
+                  }
+                  aria-label={t('removeDebt')}
+                >
+                  <Trash2 aria-hidden="true" className="size-4" />
+                </Button>
               </div>
             ))}
+            {hasIncompleteDebt ? (
+              <p className="text-xs text-negative">{t('debtIncomplete')}</p>
+            ) : null}
             <p className="text-xs text-text-muted">{t('debtsOptional')}</p>
           </Card>
         );
@@ -224,32 +369,34 @@ export function Onboarding() {
   return (
     <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-5 p-6 pb-24">
       <header className="flex items-center justify-between">
-        <h1 className="text-xl font-semibold">{useTranslation('common').t('appName')}</h1>
+        <h1 className="text-xl font-semibold">{tCommon('appName')}</h1>
         <Button
           variant="ghost"
           size="sm"
-          onClick={handleSkip}
-          aria-label={useTranslation('common').t('skip')}
+          onClick={() => void handleSkip()}
+          aria-label={t('skip')}
+          isLoading={pendingAction === 'skip'}
         >
           <SkipForward aria-hidden="true" className="size-5" />
-          {useTranslation('onboarding').t('skip')}
+          {t('skip')}
         </Button>
       </header>
 
       <div
         className="flex items-center gap-1 mb-4"
         role="progressbar"
-        aria-valuenow={stepIndex + 1}
+        aria-valuenow={safeStepIndex + 1}
         aria-valuemin={1}
-        aria-valuemax={STEPS.length}
+        aria-valuemax={steps.length}
         aria-label={t('progress')}
       >
-        {STEPS.map((step, i) => (
+        {steps.map((step, index) => (
           <div
             key={step}
             className="flex-1 h-1.5 rounded-full transition-colors"
             style={{
-              backgroundColor: i <= stepIndex ? 'var(--color-accent)' : 'var(--color-border)',
+              backgroundColor:
+                index <= safeStepIndex ? 'var(--color-accent)' : 'var(--color-border)',
             }}
           />
         ))}
@@ -257,19 +404,28 @@ export function Onboarding() {
 
       {renderStep()}
 
+      {error ? (
+        <p role="alert" className="text-sm text-negative">
+          {error}
+        </p>
+      ) : null}
+
       <div className="flex gap-2">
-        <Button variant="ghost" className="flex-1" onClick={handleSkip}>
+        <Button
+          variant="ghost"
+          className="flex-1"
+          onClick={() => void handleSkip()}
+          isLoading={pendingAction === 'skip'}
+        >
           {t('skip')}
         </Button>
         <Button
           className="flex-1"
           onClick={handleNext}
-          disabled={
-            (currentStep === 'profile' && !userName) ||
-            (currentStep === 'salary' && employmentStatus === 'employed' && !salary)
-          }
+          disabled={isSubmitting || (currentStep === 'debts' && hasIncompleteDebt)}
+          isLoading={pendingAction === 'finish'}
         >
-          {isLastStep ? t('finish') : tCommon('confirm')}
+          {isLastStep ? t('finish') : t('next')}
           <ArrowRight aria-hidden="true" className="size-4" />
         </Button>
       </div>
