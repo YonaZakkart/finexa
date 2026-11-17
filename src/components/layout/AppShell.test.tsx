@@ -1,0 +1,98 @@
+import { render, screen } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
+import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { beforeEach, describe, expect, it } from 'vitest';
+import { AppShell } from './AppShell';
+
+function renderShell() {
+  return render(
+    <MemoryRouter initialEntries={['/']}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route index element={<div>Content</div>} />
+        </Route>
+      </Routes>
+    </MemoryRouter>
+  );
+}
+
+beforeEach(() => {
+  localStorage.clear();
+});
+
+describe('AppShell', () => {
+  it('renders a working skip link and the main content target', () => {
+    renderShell();
+
+    expect(screen.getByRole('link', { name: 'Saltar al contenido' })).toHaveAttribute(
+      'href',
+      '#main-content'
+    );
+    expect(document.getElementById('main-content')).not.toBeNull();
+    expect(screen.getByText('Content')).toBeInTheDocument();
+  });
+
+  it('opens and closes the mobile sidebar', async () => {
+    const user = userEvent.setup();
+    renderShell();
+
+    const menuButton = screen.getByRole('button', { name: 'Abrir menú' });
+    expect(menuButton).toHaveAttribute('aria-expanded', 'false');
+    expect(screen.queryByLabelText('Menú de navegación')).not.toBeInTheDocument();
+
+    await user.click(menuButton);
+
+    expect(menuButton).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByLabelText('Menú de navegación')).toHaveFocus();
+    expect(screen.getByRole('button', { name: 'Cerrar menú' })).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Cerrar menú' }));
+
+    expect(screen.queryByLabelText('Menú de navegación')).not.toBeInTheDocument();
+    expect(menuButton).toHaveFocus();
+  });
+
+  it('closes the mobile sidebar with Escape', async () => {
+    const user = userEvent.setup();
+    renderShell();
+
+    await user.click(screen.getByRole('button', { name: 'Abrir menú' }));
+    await user.keyboard('{Escape}');
+
+    expect(screen.queryByLabelText('Menú de navegación')).not.toBeInTheDocument();
+  });
+
+  it('collapses the desktop sidebar and persists the preference', async () => {
+    const user = userEvent.setup();
+    renderShell();
+
+    const collapse = screen.getByRole('button', { name: 'Contraer barra lateral' });
+    expect(collapse).toHaveAttribute('aria-expanded', 'true');
+
+    await user.click(collapse);
+
+    expect(screen.getByRole('button', { name: 'Expandir barra lateral' })).toHaveAttribute(
+      'aria-expanded',
+      'false'
+    );
+    expect(localStorage.getItem('finexa:sidebar-collapsed')).toBe('true');
+  });
+
+  it('renders the language switcher and translated navigation labels', () => {
+    renderShell();
+
+    expect(screen.getByLabelText('Idioma')).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Navegación principal' })).toBeInTheDocument();
+    expect(screen.getByRole('complementary', { name: 'Navegación lateral' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Navegación inferior' })).toBeInTheDocument();
+    expect(screen.getByRole('contentinfo')).toHaveTextContent('Versión');
+  });
+
+  it('marks placeholder modules as coming soon', () => {
+    renderShell();
+
+    const investments = screen.getByRole('button', { name: 'Inversiones (Próximamente)' });
+
+    expect(investments).toBeDisabled();
+  });
+});
