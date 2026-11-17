@@ -1,41 +1,43 @@
-import { CheckCircle2, Edit2, PlusCircle, Trash2, TrendingDown } from 'lucide-react';
+import { ArrowLeft, CheckCircle2, PlusCircle, TrendingDown } from 'lucide-react';
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { Input } from '@/components/ui/Input';
-import { cn } from '@/lib/cn';
-import { formatCurrency } from '@/lib/format';
+import { formatCurrency, formatDate } from '@/lib/format';
+import { useAppStore } from '@/stores/app.store';
+import { selectTotalDebt } from '@/stores/selectors';
+import type { Debt } from '@/types';
+import { AddDebtModal } from './AddDebtModal';
+import { PayDebtDialog } from './PayDebtDialog';
+
+function sortByCreatedAt(debts: Debt[]): Debt[] {
+  return [...debts].sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
 
 export function Debts() {
   const { t } = useTranslation('debts');
-  const tCommon = useTranslation('common').t;
+  const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
-  const [showForm, setShowForm] = useState(false);
-  const [name, setName] = useState('');
-  const [amount, setAmount] = useState('');
-  const [debts] = useState<
-    Array<{ id: string; name: string; amount: number; status: 'active' | 'paid' }>
-  >([
-    { id: '1', name: 'Tarjeta crédito', amount: 320, status: 'active' as const },
-    { id: '2', name: 'Préstamo personal', amount: 1500, status: 'active' as const },
-  ]);
+  const debts = useAppStore((state) => state.debts);
+  const totalDebt = useAppStore(selectTotalDebt);
+  const language = useAppStore((state) => state.settings?.language ?? 'es');
+  const [addOpen, setAddOpen] = useState(false);
+  const [payingDebt, setPayingDebt] = useState<Debt | null>(null);
 
-  const activeDebts = debts.filter((d) => d.status === 'active');
-  const paidDebts = debts.filter((d) => d.status === 'paid');
-  const totalActive = activeDebts.reduce((s, d) => s + d.amount, 0);
+  const activeDebts = sortByCreatedAt(debts.filter((debt) => debt.status === 'active'));
+  const paidDebts = sortByCreatedAt(debts.filter((debt) => debt.status === 'paid'));
 
   return (
     <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-5 p-6">
-      <header className="flex items-center justify-between gap-4">
+      <header className="flex items-center gap-3">
         <button
           type="button"
           onClick={() => navigate('/')}
-          className="p-1 rounded-md hover:bg-surface"
-          aria-label={tCommon('close')}
+          className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md text-text-muted transition-colors hover:bg-surface hover:text-text"
+          aria-label={tCommon('back')}
         >
-          <TrendingDown aria-hidden="true" className="size-5" />
+          <ArrowLeft aria-hidden="true" className="size-5" />
         </button>
         <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
       </header>
@@ -48,167 +50,98 @@ export function Debts() {
           <TrendingDown aria-hidden="true" className="size-5 text-negative" />
         </div>
         <p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums text-negative">
-          {formatCurrency(totalActive, 'es')}
+          {formatCurrency(totalDebt, language)}
         </p>
+        <p className="mt-2 text-xs text-text-muted">{t('totalHint')}</p>
       </Card>
 
       <Card className="p-5 space-y-4" aria-labelledby="debts-title">
-        <header className="flex items-center justify-between">
+        <header className="flex items-center justify-between gap-3">
           <h2 id="debts-title" className="text-sm font-medium text-text-muted">
             {t('yourDebts')}
           </h2>
-          <Button variant="ghost" size="sm" onClick={() => setShowForm(true)}>
+          <Button variant="ghost" size="sm" onClick={() => setAddOpen(true)}>
             <PlusCircle aria-hidden="true" className="size-4" />
             {t('addDebt')}
           </Button>
         </header>
 
-        {activeDebts.length === 0 && paidDebts.length === 0 ? (
-          <p className="text-center text-text-muted py-8">{t('noDebts')}</p>
+        {debts.length === 0 ? (
+          <div className="py-6 text-center">
+            <p className="text-sm font-medium">{t('noDebts')}</p>
+            <p className="mt-1 text-sm text-text-muted">{t('noDebtsHint')}</p>
+          </div>
         ) : (
           <>
-            {activeDebts.length > 0 && (
+            {activeDebts.length > 0 ? (
               <div className="space-y-3">
-                <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide">
+                <h3 className="text-xs font-medium uppercase tracking-wide text-text-muted">
                   {t('active')}
                 </h3>
                 <ul className="space-y-2">
                   {activeDebts.map((debt) => (
-                    <li
-                      key={debt.id}
-                      className="flex items-center justify-between gap-3 p-3 rounded-md border border-border bg-surface"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{debt.name}</p>
-                        <p className="text-xs text-text-muted">
-                          {t('amount')}: {formatCurrency(debt.amount, 'es')}
-                        </p>
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <Button
-                          size="sm"
-                          variant="primary"
-                          onClick={() => {
-                            /* mark paid */
-                          }}
-                        >
-                          <CheckCircle2 aria-hidden="true" className="size-4" />
-                          {t('markPaid')}
-                        </Button>
-                        <Button
-                          size="sm"
-                          variant="ghost"
-                          onClick={() => {
-                            /* edit */
-                          }}
-                        >
-                          <Edit2 aria-hidden="true" className="size-4" />
-                        </Button>
-                      </div>
+                    <li key={debt.id} className="rounded-md border border-border bg-surface p-3">
+                      <p className="truncate font-medium">{debt.name}</p>
+                      <p className="mt-1 text-xs text-text-muted">
+                        {formatCurrency(debt.amount, language)}
+                      </p>
+                      <Button
+                        size="sm"
+                        className="mt-3 w-full sm:w-auto"
+                        onClick={() => setPayingDebt(debt)}
+                      >
+                        <CheckCircle2 aria-hidden="true" className="size-4" />
+                        {t('markPaid')}
+                      </Button>
                     </li>
                   ))}
                 </ul>
               </div>
-            )}
-            {paidDebts.length > 0 && (
+            ) : null}
+
+            {paidDebts.length > 0 ? (
               <div className="space-y-3">
-                <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide">
+                <h3 className="text-xs font-medium uppercase tracking-wide text-text-muted">
                   {t('paid')}
                 </h3>
                 <ul className="space-y-2">
-                  {paidDebts.map((debt) => (
-                    <li
-                      key={debt.id}
-                      className="flex items-center justify-between gap-3 p-3 rounded-md border border-border bg-surface opacity-60"
-                    >
-                      <div className="flex-1 min-w-0">
-                        <p className="font-medium truncate">{debt.name}</p>
-                        <p className="text-xs text-text-muted">
-                          {t('amount')}: {formatCurrency(debt.amount, 'es')}
-                        </p>
-                      </div>
-                      <span className="text-xs text-positive font-medium">{t('paid')}</span>
-                    </li>
-                  ))}
+                  {paidDebts.map((debt) => {
+                    const paidDate = debt.paidAt ? new Date(debt.paidAt) : null;
+                    const hasPaidDate = paidDate !== null && !Number.isNaN(paidDate.getTime());
+
+                    return (
+                      <li
+                        key={debt.id}
+                        className="rounded-md border border-border bg-surface p-3 opacity-70"
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div className="min-w-0">
+                            <p className="truncate font-medium">{debt.name}</p>
+                            <p className="mt-1 text-xs text-text-muted">
+                              {formatCurrency(debt.amount, language)}
+                            </p>
+                          </div>
+                          <span className="text-xs font-medium text-positive">
+                            {t('paidBadge')}
+                          </span>
+                        </div>
+                        {hasPaidDate ? (
+                          <p className="mt-2 text-xs text-text-muted">
+                            {t('paidOn', { date: formatDate(paidDate, language) })}
+                          </p>
+                        ) : null}
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
-            )}
+            ) : null}
           </>
         )}
       </Card>
 
-      {showForm && (
-        <Card
-          className={cn(
-            'p-5 space-y-4 fixed inset-0 z-50 m-auto max-w-md max-h-[90vh] overflow-y-auto glass-card glass-card--strong',
-            'fixed inset-0 z-50 m-auto max-w-md max-h-[90vh] overflow-y-auto'
-          )}
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="add-debt-title"
-        >
-          <header className="flex items-center justify-between">
-            <h3 id="add-debt-title" className="text-lg font-semibold">
-              {t('addDebt')}
-            </h3>
-            <button
-              type="button"
-              onClick={() => setShowForm(false)}
-              className="p-1 rounded-md hover:bg-surface"
-              aria-label={tCommon('close')}
-            >
-              <Trash2 aria-hidden="true" className="size-5" />
-            </button>
-          </header>
-          <form
-            onSubmit={(e) => {
-              e.preventDefault();
-              if (name && amount) {
-                setShowForm(false);
-                setName('');
-                setAmount('');
-              }
-            }}
-            className="space-y-4"
-          >
-            <Input
-              label={t('name')}
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder={t('debtNamePlaceholder')}
-              required
-            />
-            <Input
-              label={t('amount')}
-              type="number"
-              inputMode="decimal"
-              step="0.01"
-              min="0.01"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              placeholder="0.00"
-              required
-            />
-            <div className="flex gap-2">
-              <Button type="submit" className="flex-1">
-                {t('save')}
-              </Button>
-              <Button
-                type="button"
-                variant="ghost"
-                onClick={() => {
-                  setShowForm(false);
-                  setName('');
-                  setAmount('');
-                }}
-                className="flex-1"
-              >
-                {t('cancel')}
-              </Button>
-            </div>
-          </form>
-        </Card>
-      )}
+      {addOpen ? <AddDebtModal onClose={() => setAddOpen(false)} /> : null}
+      {payingDebt ? <PayDebtDialog debt={payingDebt} onClose={() => setPayingDebt(null)} /> : null}
     </main>
   );
 }
