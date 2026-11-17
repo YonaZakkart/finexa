@@ -92,7 +92,7 @@ function TopNav({
         <div className="flex min-w-0 items-center gap-1">
           {MODULE_NAV.map((module) => {
             const className = cn(
-              'shrink-0 whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm',
+              'shrink-0 min-h-11 items-center justify-center whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm',
               module.active
                 ? 'inline-flex text-accent bg-surface'
                 : 'hidden text-text-muted hover:text-text hover:bg-surface lg:inline-flex',
@@ -159,7 +159,7 @@ function SidebarContent({
           <button
             type="button"
             onClick={onClose}
-            className="p-1 rounded-md hover:bg-surface lg:hidden"
+            className="inline-flex min-h-11 min-w-11 items-center justify-center rounded-md hover:bg-surface lg:hidden"
             aria-label={tCommon('closeMenu')}
           >
             <ChevronLeft aria-hidden="true" className="size-5" />
@@ -169,7 +169,7 @@ function SidebarContent({
           <button
             type="button"
             onClick={onToggleCollapse}
-            className="hidden rounded-md p-1 text-text-muted hover:bg-surface hover:text-text lg:inline-flex"
+            className="hidden min-h-11 min-w-11 items-center justify-center rounded-md text-text-muted hover:bg-surface hover:text-text lg:inline-flex"
             aria-label={collapsed ? tCommon('expandSidebar') : tCommon('collapseSidebar')}
             aria-expanded={!collapsed}
           >
@@ -189,7 +189,7 @@ function SidebarContent({
           <div className="space-y-1">
             {MODULE_NAV.map((module) => {
               const className = cn(
-                'flex w-full items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+                'flex min-h-11 w-full items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
                 module.active
                   ? 'text-accent bg-surface'
                   : 'text-text-muted hover:text-text hover:bg-surface',
@@ -241,7 +241,7 @@ function SidebarContent({
               aria-label={t(item.label)}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
-                'flex items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
+                'flex min-h-11 items-center gap-3 rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
                 collapsed && 'lg:justify-center lg:px-2',
                 isActive
                   ? 'text-accent bg-surface'
@@ -405,7 +405,7 @@ export function AppShell() {
     <div className="flex min-h-dvh flex-col">
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 px-4 py-2 bg-accent text-text-inverse rounded-md"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-4 focus:left-4 z-50 inline-flex min-h-11 items-center px-4 py-2 bg-accent text-text-inverse rounded-md"
       >
         {t('skipToContent')}
       </a>
