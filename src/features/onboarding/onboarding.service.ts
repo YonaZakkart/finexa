@@ -1,5 +1,6 @@
 import { TransactionError } from '@/features/balance/errors';
 import { insertTransaction } from '@/features/balance/transactions.service';
+import { MAX_DEBT_NAME_LENGTH } from '@/features/debts/constants';
 import { createDebt } from '@/features/debts/debts.repository';
 import { putSettings, updateSettings } from '@/features/settings/settings.service';
 import { getLocalDateString } from '@/lib/date';
@@ -26,8 +27,6 @@ export interface CompleteOnboardingInput {
   initialBalance?: number;
   debts?: OnboardingDebtInput[];
 }
-
-const MAX_DEBT_NAME_LENGTH = 80;
 
 function assertValidInitialBalance(value: number): void {
   if (!Number.isFinite(value) || value < 0) {

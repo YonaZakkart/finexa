@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
+import { MAX_DEBT_NAME_LENGTH } from '@/features/debts/constants';
 import { roundMoney } from '@/lib/money';
 import { completeOnboarding, type OnboardingProfile, skipOnboarding } from './onboarding.service';
 
@@ -307,6 +308,7 @@ export function Onboarding() {
                   <Input
                     label={t('debtName')}
                     placeholder={t('debtNamePlaceholder')}
+                    maxLength={MAX_DEBT_NAME_LENGTH}
                     value={debt.name}
                     onChange={(e) =>
                       setDebts((current) =>

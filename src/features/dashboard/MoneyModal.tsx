@@ -6,6 +6,7 @@ import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
 import { TransactionError } from '@/features/balance/errors';
 import { record } from '@/features/balance/transactions.service';
+import { MAX_NOTE_LENGTH } from '@/features/balance/validation';
 import { getLocalDateString } from '@/lib/date';
 import { roundMoney } from '@/lib/money';
 
@@ -116,7 +117,7 @@ export function MoneyModal({ onClose }: { onClose: () => void }) {
         <Input
           label={t('money.source')}
           value={source}
-          maxLength={280}
+          maxLength={MAX_NOTE_LENGTH}
           onChange={(event) => setSource(event.target.value)}
           placeholder={t('money.sourcePlaceholder')}
         />

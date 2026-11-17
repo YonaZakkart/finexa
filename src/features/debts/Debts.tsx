@@ -4,6 +4,7 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { cn } from '@/lib/cn';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { useAppStore } from '@/stores/app.store';
 import { selectTotalDebt } from '@/stores/selectors';
@@ -27,6 +28,7 @@ export function Debts() {
 
   const activeDebts = sortByCreatedAt(debts.filter((debt) => debt.status === 'active'));
   const paidDebts = sortByCreatedAt(debts.filter((debt) => debt.status === 'paid'));
+  const totalTone = totalDebt > 0 ? 'text-negative' : 'text-text-muted';
 
   return (
     <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-5 p-6">
@@ -47,9 +49,12 @@ export function Debts() {
           <h2 id="total-title" className="text-sm font-medium text-text-muted">
             {t('totalDebt')}
           </h2>
-          <TrendingDown aria-hidden="true" className="size-5 text-negative" />
+          <TrendingDown aria-hidden="true" className={cn('size-5', totalTone)} />
         </div>
-        <p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums text-negative">
+        <p
+          aria-live="polite"
+          className={cn('mt-3 text-4xl font-semibold tracking-tight tabular-nums', totalTone)}
+        >
           {formatCurrency(totalDebt, language)}
         </p>
         <p className="mt-2 text-xs text-text-muted">{t('totalHint')}</p>

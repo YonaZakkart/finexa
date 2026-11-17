@@ -5,9 +5,8 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { TransactionError } from '@/features/balance/errors';
 import { roundMoney } from '@/lib/money';
+import { MAX_DEBT_NAME_LENGTH } from './constants';
 import { createDebt } from './debts.service';
-
-const MAX_DEBT_NAME_LENGTH = 80;
 
 export function AddDebtModal({ onClose }: { onClose: () => void }) {
   const { t } = useTranslation('debts');
