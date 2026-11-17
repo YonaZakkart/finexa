@@ -67,11 +67,13 @@ describe('History', () => {
 
     await waitFor(() => expect(listMock).toHaveBeenCalledWith(today));
 
-    expect(await screen.findByText('Gastos diarios')).toBeInTheDocument();
+    expect((await screen.findAllByText('Gastos diarios')).length).toBeGreaterThan(0);
+    expect(screen.getByText('Resumen del día')).toBeInTheDocument();
+    expect(screen.getByText('1 gasto')).toBeInTheDocument();
     expect(screen.getByText('Comida')).toBeInTheDocument();
     expect(screen.getByText('Lunch')).toBeInTheDocument();
     expect(screen.getByText('-12,50 US$')).toBeInTheDocument();
-    expect(screen.getByText('12,50 US$')).toBeInTheDocument();
+    expect(screen.getAllByText('12,50 US$').length).toBeGreaterThan(0);
     expect(screen.getByText('13:30')).toBeInTheDocument();
     expect(screen.getAllByText('Hoy').length).toBeGreaterThan(0);
   });
@@ -127,6 +129,8 @@ describe('History', () => {
     renderHistory();
 
     expect(await screen.findByText('No hay gastos registrados')).toBeInTheDocument();
+    expect(screen.getByText('Sin datos')).toBeInTheDocument();
+    expect(screen.getByText('0 gastos')).toBeInTheDocument();
   });
 
   it('shows a loading state while the query is pending', async () => {
@@ -168,7 +172,7 @@ describe('History', () => {
     const user = userEvent.setup();
     renderHistory();
 
-    await screen.findByText('Gastos diarios');
+    expect((await screen.findAllByText('Gastos diarios')).length).toBeGreaterThan(0);
     await user.click(screen.getByRole('link', { name: /Editar/ }));
 
     expect(screen.getByText('Edit page')).toBeInTheDocument();
