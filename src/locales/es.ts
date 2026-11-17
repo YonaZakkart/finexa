@@ -76,6 +76,8 @@ export const es = {
     save: 'Guardar gasto',
     selectCategory: 'Selecciona una categoría',
     selectSubcategory: 'Selecciona una subcategoría',
+    saved: 'Gasto guardado. Balance actualizado.',
+    saveError: 'No pudimos guardar el gasto. Inténtalo de nuevo.',
   },
   categories: {
     mobility: 'Movilidad',
