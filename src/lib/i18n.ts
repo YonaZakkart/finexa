@@ -11,7 +11,7 @@ export async function initI18n(language: SupportedLanguage): Promise<void> {
       fallbackLng: 'en',
       supportedLngs: [...SUPPORTED_LANGUAGES],
       defaultNS: 'common',
-      ns: ['common', 'dashboard', 'expenses'],
+      ns: ['common', 'dashboard', 'expenses', 'errors'],
       interpolation: {
         escapeValue: false,
       },
