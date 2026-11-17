@@ -185,6 +185,24 @@ describe('updateExpense', () => {
     });
   });
 
+  it('clears optional fields when the patch includes them as undefined', async () => {
+    const expense = await record(expenseInput({ amount: 20, note: 'Lunch' }));
+
+    await updateExpense(
+      expense.id,
+      { category: 'other', subcategory: undefined, note: undefined },
+      false
+    );
+
+    const stored = await db.transactions.get(expense.id);
+
+    expect(stored?.category).toBe('other');
+    expect(stored?.subcategory).toBeUndefined();
+    expect(stored?.note).toBeUndefined();
+    expect(await db.transactions.count()).toBe(1);
+    expect(selectBalance(useAppStore.getState())).toBe(-20);
+  });
+
   it('does not create an adjustment when the amount does not change', async () => {
     const expense = await record(expenseInput({ amount: 20 }));
 
