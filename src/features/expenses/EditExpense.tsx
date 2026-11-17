@@ -144,7 +144,7 @@ function EditExpenseForm({ expense }: { expense: Transaction }) {
 
     try {
       await updateExpense(expense.id, patch, affectsBalance);
-      navigate('/history');
+      navigate(`/history?date=${patch.date ?? expense.date}`);
     } catch (caught) {
       setError(caught instanceof TransactionError ? tErrors(caught.code) : t('editError'));
     } finally {

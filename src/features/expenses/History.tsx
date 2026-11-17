@@ -1,13 +1,13 @@
 import { ArrowLeft, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { getCategory, getSubcategory } from '@/features/expenses/categories';
 import { listExpensesByDate } from '@/features/transactions/transactions.repository';
-import { addDaysToDate, getLocalDateString } from '@/lib/date';
+import { addDaysToDate, getLocalDateString, isValidLocalDate } from '@/lib/date';
 import { formatCurrency, formatDate, formatTime } from '@/lib/format';
 import { roundMoney } from '@/lib/money';
 import { useAppStore } from '@/stores/app.store';
@@ -19,7 +19,15 @@ export function History() {
   const { t: tCategories } = useTranslation('categories');
   const navigate = useNavigate();
   const language = useAppStore((state) => state.settings?.language ?? 'es');
-  const [currentDate, setCurrentDate] = useState(getLocalDateString);
+  const [searchParams] = useSearchParams();
+  const [currentDate, setCurrentDate] = useState(() => {
+    const requested = searchParams.get('date');
+    const todayDate = getLocalDateString();
+
+    return requested && isValidLocalDate(requested) && requested <= todayDate
+      ? requested
+      : todayDate;
+  });
   const [expenses, setExpenses] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
