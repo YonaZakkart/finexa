@@ -1,10 +1,57 @@
+import { Plus, Wallet } from 'lucide-react';
+
+// Temporary design-system preview; replaced by the real shell in T06/T07.
 export function App() {
   return (
-    <main className="grid min-h-dvh place-items-center p-6">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold tracking-tight">Finexa</h1>
-        <p className="mt-3 font-mono text-xs text-[var(--color-text-muted)]">v{__APP_VERSION__}</p>
-      </div>
+    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col justify-center gap-5 p-6">
+      <header className="flex items-end justify-between gap-4">
+        <div>
+          <p className="text-xs font-medium tracking-[0.2em] text-text-muted uppercase">Finexa</p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">Control de gastos</h1>
+        </div>
+        <span className="font-mono text-xs text-text-muted">v{__APP_VERSION__}</span>
+      </header>
+
+      <section className="glass-card p-5" aria-labelledby="balance-title">
+        <div className="flex items-center justify-between">
+          <h2 id="balance-title" className="text-sm font-medium text-text-muted">
+            Balance actual
+          </h2>
+          <Wallet aria-hidden="true" className="size-5 text-accent" />
+        </div>
+        <p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums">$1,250.00</p>
+        <div className="mt-4 flex gap-6 text-sm">
+          <p className="text-text-muted">
+            Deuda <span className="ml-1 font-medium text-negative tabular-nums">-$320.00</span>
+          </p>
+          <p className="text-text-muted">
+            Neto <span className="ml-1 font-medium text-positive tabular-nums">$930.00</span>
+          </p>
+        </div>
+      </section>
+
+      <section className="glass-card glass-card--strong p-5" aria-labelledby="expense-title">
+        <h2 id="expense-title" className="text-sm font-medium text-text-muted">
+          Registrar gasto
+        </h2>
+        <label htmlFor="demo-amount" className="mt-4 block text-sm font-medium">
+          Monto
+        </label>
+        <input
+          id="demo-amount"
+          type="text"
+          inputMode="decimal"
+          placeholder="0.00"
+          className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-text placeholder:text-text-muted focus:border-accent focus:outline-none"
+        />
+        <button
+          type="button"
+          className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-md bg-accent px-4 text-sm font-semibold text-text-inverse transition-colors hover:bg-accent-strong"
+        >
+          <Plus aria-hidden="true" className="size-4" />
+          Registrar gasto
+        </button>
+      </section>
     </main>
   );
 }
