@@ -18,6 +18,8 @@ function addDays(date: Date, days: number): Date {
 
 export function History() {
   const { t: tCommon } = useTranslation('common');
+  const { t: tExpenses } = useTranslation('expenses');
+  const { i18n } = useTranslation('common');
   const navigate = useNavigate();
   const [currentDate, setCurrentDate] = useState(() => formatISO(new Date()));
 
@@ -50,9 +52,7 @@ export function History() {
         >
           <Calendar aria-hidden="true" className="size-5" />
         </button>
-        <h1 className="text-2xl font-semibold tracking-tight">
-          {useTranslation('expenses').t('history')}
-        </h1>
+        <h1 className="text-2xl font-semibold tracking-tight">{tExpenses('history')}</h1>
       </header>
 
       <div className="flex items-center justify-between gap-2 p-3 rounded-md border border-border bg-surface">
@@ -67,13 +67,10 @@ export function History() {
         <div className="flex-1 flex items-center justify-center gap-2">
           <span className="text-sm font-medium">
             {isToday
-              ? useTranslation('expenses').t('today')
+              ? tExpenses('today')
               : isYesterday
-                ? useTranslation('expenses').t('yesterday')
-                : formatDate(
-                    currentDate,
-                    useTranslation('common').t('language')?.startsWith('es') ? 'es' : 'en'
-                  )}
+                ? tExpenses('yesterday')
+                : formatDate(currentDate, i18n.resolvedLanguage?.startsWith('es') ? 'es' : 'en')}
           </span>
           <input
             type="date"
@@ -99,15 +96,13 @@ export function History() {
       <Card className="p-5 space-y-4" aria-labelledby="expenses-title">
         <header className="flex items-center justify-between">
           <h2 id="expenses-title" className="text-sm font-medium text-text-muted">
-            {useTranslation('expenses').t('expenses')}
+            {tExpenses('expenses')}
           </h2>
           <span className="font-semibold tabular-nums">{formatCurrency(total, 'es')}</span>
         </header>
 
         {expenses.length === 0 ? (
-          <p className="text-center text-text-muted py-8">
-            {useTranslation('expenses').t('noExpenses')}
-          </p>
+          <p className="text-center text-text-muted py-8">{tExpenses('noExpenses')}</p>
         ) : (
           <ul className="space-y-3">
             {expenses.map((expense) => (
