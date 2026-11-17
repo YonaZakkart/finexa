@@ -76,6 +76,8 @@ export const en = {
     save: 'Save expense',
     selectCategory: 'Select a category',
     selectSubcategory: 'Select a subcategory',
+    saved: 'Expense saved. Balance updated.',
+    saveError: 'We could not save the expense. Please try again.',
   },
   categories: {
     mobility: 'Mobility',
