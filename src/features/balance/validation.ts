@@ -1,4 +1,4 @@
-import { categories } from '@/features/expenses/categories';
+import { getCategory, getSubcategory } from '@/features/expenses/categories';
 import { getLocalDateString, isValidLocalDate } from '@/lib/date';
 import type { Transaction, TransactionDirection, TransactionType } from '@/types';
 import { TransactionError } from './errors';
@@ -48,7 +48,7 @@ export function assertValidCategory(category?: string, subcategory?: string): vo
     throw new TransactionError('missingCategory');
   }
 
-  const found = categories.find((item) => item.id === category);
+  const found = getCategory(category);
 
   if (!found) {
     throw new TransactionError('unknownCategory');
@@ -58,7 +58,7 @@ export function assertValidCategory(category?: string, subcategory?: string): vo
     throw new TransactionError('missingSubcategory');
   }
 
-  if (subcategory && !found.subcategories.some((item) => item.id === subcategory)) {
+  if (subcategory && !getSubcategory(category, subcategory)) {
     throw new TransactionError('unknownSubcategory');
   }
 }
