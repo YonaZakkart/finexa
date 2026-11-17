@@ -59,7 +59,7 @@ export function Modal({
         className
       )}
     >
-      <div className="glass-card glass-card--strong max-h-[90dvh] overflow-y-auto p-5">
+      <div className="glass-card glass-card--strong max-h-[90dvh] overflow-y-auto bg-bg-elevated p-5">
         <div className="flex items-start justify-between gap-4">
           <div>
             <h2 id={titleId} className="text-lg font-semibold">
