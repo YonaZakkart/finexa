@@ -42,6 +42,7 @@ function DebtCard() {
   const { t } = useTranslation('dashboard');
   const totalDebt = useAppStore(selectTotalDebt);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
+  const tone = totalDebt > 0 ? 'text-negative' : 'text-text-muted';
 
   return (
     <Card className="p-5" aria-labelledby="debt-title">
@@ -49,9 +50,12 @@ function DebtCard() {
         <h2 id="debt-title" className="text-sm font-medium text-text-muted">
           {t('debt')}
         </h2>
-        <TrendingDown aria-hidden="true" className="size-5 text-negative" />
+        <TrendingDown aria-hidden="true" className={cn('size-5', tone)} />
       </div>
-      <p className="mt-3 text-xl font-semibold tracking-tight tabular-nums text-negative sm:text-2xl">
+      <p
+        aria-live="polite"
+        className={cn('mt-3 text-xl font-semibold tracking-tight tabular-nums sm:text-2xl', tone)}
+      >
         {formatCurrency(totalDebt, language)}
       </p>
     </Card>
@@ -72,6 +76,7 @@ function NetCard() {
         <Scale aria-hidden="true" className="size-5 text-text-muted" />
       </div>
       <p
+        aria-live="polite"
         className={cn(
           'mt-3 text-xl font-semibold tracking-tight tabular-nums sm:text-2xl',
           netBalance < 0 ? 'text-negative' : 'text-text'

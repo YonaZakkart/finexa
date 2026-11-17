@@ -324,7 +324,7 @@ function BottomNav() {
 
   return (
     <nav
-      className="fixed bottom-0 left-0 right-0 z-40 glass-card glass-card--strong border-t border-border pb-[env(safe-area-inset-bottom)] lg:hidden"
+      className="fixed bottom-0 left-0 right-0 z-40 glass-card glass-card--strong border-t border-border bg-bg-elevated pb-[env(safe-area-inset-bottom)] lg:hidden"
       aria-label={tCommon('bottomNavigation')}
     >
       <div className="flex items-center justify-around h-14">

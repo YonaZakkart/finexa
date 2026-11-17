@@ -3,14 +3,13 @@ import { db } from '@/lib/db';
 import { roundMoney } from '@/lib/money';
 import { useAppStore } from '@/stores/app.store';
 import type { Debt } from '@/types';
+import { MAX_DEBT_NAME_LENGTH } from './constants';
 import { createDebt as createDebtRecord } from './debts.repository';
 
 export interface NewDebtInput {
   name: string;
   amount: number;
 }
-
-const MAX_DEBT_NAME_LENGTH = 80;
 
 export async function createDebt(input: NewDebtInput): Promise<Debt> {
   const name = input.name.trim();
