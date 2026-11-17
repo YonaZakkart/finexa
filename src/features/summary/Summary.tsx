@@ -2,10 +2,19 @@ import { BarChart3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
+import { getLocalDateString } from '@/lib/date';
+import { useAppStore } from '@/stores/app.store';
+import { DailySummaryCard } from './DailySummaryCard';
 
 export function Summary() {
   const { t } = useTranslation('summary');
   const navigate = useNavigate();
+  const transactions = useAppStore((state) => state.transactions);
+  const language = useAppStore((state) => state.settings?.language ?? 'es');
+  const today = getLocalDateString();
+  const todayExpenses = transactions.filter(
+    (transaction) => transaction.type === 'expense' && transaction.date === today
+  );
 
   return (
     <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-5 p-6">
@@ -13,21 +22,7 @@ export function Summary() {
         <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
       </header>
 
-      <Card className="p-5 grid grid-cols-2 gap-3" aria-labelledby="summary-title">
-        <h2 id="summary-title" className="col-span-2 text-sm font-medium text-text-muted">
-          {t('dailySummary')}
-        </h2>
-        <div className="flex items-center gap-2 text-text-muted">
-          <span>
-            {t('totalSpent')}: <span className="font-semibold tabular-nums">$42.50</span>
-          </span>
-        </div>
-        <div className="flex items-center gap-2 text-text-muted">
-          <span>
-            {t('dominantCategory')}: <span className="font-semibold">Food</span>
-          </span>
-        </div>
-      </Card>
+      <DailySummaryCard expenses={todayExpenses} language={language} />
 
       <Card className="p-5 space-y-4" aria-labelledby="charts-title">
         <h3 id="charts-title" className="text-sm font-medium text-text-muted">

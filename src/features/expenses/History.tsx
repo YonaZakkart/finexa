@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { getCategory, getSubcategory } from '@/features/expenses/categories';
+import { DailySummaryCard } from '@/features/summary/DailySummaryCard';
 import { listExpensesByDate } from '@/features/transactions/transactions.repository';
 import { addDaysToDate, getLocalDateString, isValidLocalDate } from '@/lib/date';
 import { formatCurrency, formatDate, formatTime } from '@/lib/format';
@@ -162,6 +163,8 @@ export function History() {
           </Button>
         </div>
       </Card>
+
+      {!isLoading && !error ? <DailySummaryCard expenses={expenses} language={language} /> : null}
 
       <Card className="p-5 space-y-4" aria-labelledby="expenses-title">
         <header className="flex items-center justify-between gap-3">
