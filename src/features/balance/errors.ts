@@ -12,7 +12,9 @@ export type TransactionErrorCode =
   | 'debtAlreadyPaid'
   | 'transactionNotFound'
   | 'notAnExpense'
-  | 'initialBalanceExists';
+  | 'initialBalanceExists'
+  | 'invalidDebtName'
+  | 'invalidSalary';
 
 export class TransactionError extends Error {
   readonly code: TransactionErrorCode;

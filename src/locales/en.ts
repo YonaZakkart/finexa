@@ -98,6 +98,14 @@ export const en = {
     progress: 'Onboarding progress',
     finish: 'Finish',
     next: 'Next',
+    addBankCash: 'Add bank and cash details',
+    hideBankCash: 'Hide bank and cash details',
+    bank: 'Bank',
+    cash: 'Cash',
+    bankCashHint: 'The total is the sum of bank and cash.',
+    removeDebt: 'Remove debt',
+    debtIncomplete: 'Complete the name and amount, or leave the row empty.',
+    saveError: 'We could not save your data. Please try again.',
   },
   errors: {
     invalidAmount: 'The amount must be greater than zero',
@@ -114,5 +122,7 @@ export const en = {
     transactionNotFound: 'The transaction does not exist',
     notAnExpense: 'Only expenses can be edited',
     initialBalanceExists: 'The initial balance was already recorded',
+    invalidDebtName: 'The debt name must be between 1 and 80 characters',
+    invalidSalary: 'The salary must be greater than zero',
   },
 } as const;

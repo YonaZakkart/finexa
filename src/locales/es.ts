@@ -98,6 +98,14 @@ export const es = {
     progress: 'Progreso del onboarding',
     finish: 'Finalizar',
     next: 'Siguiente',
+    addBankCash: 'Añadir banco y efectivo',
+    hideBankCash: 'Ocultar banco y efectivo',
+    bank: 'Banco',
+    cash: 'Efectivo',
+    bankCashHint: 'El total es la suma de banco y efectivo.',
+    removeDebt: 'Quitar deuda',
+    debtIncomplete: 'Completa el nombre y el monto, o deja la fila vacía.',
+    saveError: 'No pudimos guardar tus datos. Inténtalo de nuevo.',
   },
   errors: {
     invalidAmount: 'El monto debe ser mayor que cero',
@@ -114,5 +122,7 @@ export const es = {
     transactionNotFound: 'La transacción no existe',
     notAnExpense: 'Solo se pueden editar gastos',
     initialBalanceExists: 'El balance inicial ya fue registrado',
+    invalidDebtName: 'El nombre de la deuda debe tener entre 1 y 80 caracteres',
+    invalidSalary: 'El salario debe ser mayor que cero',
   },
 } as const;

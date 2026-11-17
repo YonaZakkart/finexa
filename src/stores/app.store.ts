@@ -11,6 +11,7 @@ interface AppStore {
   transactions: Transaction[];
   debts: Debt[];
   hydrate: () => Promise<void>;
+  sync: () => Promise<void>;
   setSettings: (settings: Settings) => void;
   setTransactions: (transactions: Transaction[]) => void;
   setDebts: (debts: Debt[]) => void;
@@ -39,17 +40,22 @@ export const useAppStore = create<AppStore>((set, get) => ({
 
     try {
       await db.open();
-      const [settings, transactions, debts] = await Promise.all([
-        getSettings(),
-        db.transactions.toArray(),
-        db.debts.toArray(),
-      ]);
-
-      set({ settings, transactions, debts, hydrated: true, isLoading: false });
+      await get().sync();
+      set({ hydrated: true, isLoading: false });
     } catch (error) {
       console.error('Failed to hydrate the app store', error);
       set({ isLoading: false, error: 'Unable to load local data' });
     }
+  },
+
+  sync: async () => {
+    const [settings, transactions, debts] = await Promise.all([
+      getSettings(),
+      db.transactions.toArray(),
+      db.debts.toArray(),
+    ]);
+
+    set({ settings, transactions, debts });
   },
 
   setSettings: (settings) => set({ settings }),

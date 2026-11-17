@@ -31,8 +31,17 @@ function LoadingFallback() {
   );
 }
 
-function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const { hydrated, settings, hydrate } = useAppStore();
+function LoadingScreen() {
+  return (
+    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col items-center justify-center gap-4 p-6">
+      <LoadingFallback />
+    </main>
+  );
+}
+
+function useAppHydration(): boolean {
+  const hydrated = useAppStore((state) => state.hydrated);
+  const hydrate = useAppStore((state) => state.hydrate);
 
   useEffect(() => {
     if (!hydrated) {
@@ -40,26 +49,44 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
     }
   }, [hydrated, hydrate]);
 
+  return hydrated;
+}
+
+function ProtectedRoute({ children }: { children: React.ReactNode }) {
+  const hydrated = useAppHydration();
+  const onboardingCompleted = useAppStore((state) => state.settings?.onboardingCompleted);
+
   if (!hydrated) {
-    return (
-      <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col items-center justify-center gap-4 p-6">
-        <LoadingFallback />
-      </main>
-    );
+    return <LoadingScreen />;
   }
 
-  if (!settings?.onboardingCompleted) {
+  if (!onboardingCompleted) {
     return <Navigate to="/onboarding" replace />;
   }
 
   return <>{children}</>;
 }
 
+function OnboardingRoute() {
+  const hydrated = useAppHydration();
+  const onboardingCompleted = useAppStore((state) => state.settings?.onboardingCompleted);
+
+  if (!hydrated) {
+    return <LoadingScreen />;
+  }
+
+  if (onboardingCompleted) {
+    return <Navigate to="/" replace />;
+  }
+
+  return <Onboarding />;
+}
+
 function AppRoutes() {
   return (
     <BrowserRouter>
       <Routes>
-        <Route path="/onboarding" element={<Onboarding />} />
+        <Route path="/onboarding" element={<OnboardingRoute />} />
         <Route
           element={
             <ProtectedRoute>
