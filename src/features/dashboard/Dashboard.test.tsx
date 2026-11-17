@@ -90,7 +90,7 @@ describe('Dashboard', () => {
     renderDashboard();
 
     expect(within(cardFor('Balance actual')).getByText(/80,00\s*US\$/)).toBeInTheDocument();
-    expect(within(cardFor('Deuda')).getByText(/30,00\s*US\$/)).toBeInTheDocument();
+    expect(within(cardFor('Deuda')).getByText(/30,00\s*US\$/)).toHaveClass('text-negative');
     expect(within(cardFor('Neto')).getByText(/50,00\s*US\$/)).toBeInTheDocument();
     expect(screen.queryByText('Aún no hay movimientos')).not.toBeInTheDocument();
   });
@@ -115,6 +115,7 @@ describe('Dashboard', () => {
     expect(
       screen.getByText('Añade dinero o registra un gasto para ver tu balance en movimiento.')
     ).toBeInTheDocument();
+    expect(within(cardFor('Deuda')).getByText(/0,00\s*US\$/)).toHaveClass('text-text-muted');
   });
 
   it('opens the money modal from the quick action', async () => {

@@ -87,7 +87,7 @@ describe('Debts', () => {
     renderDebts();
 
     expect(screen.getByRole('heading', { name: 'Deudas' })).toBeInTheDocument();
-    expect(within(cardFor('Deuda total')).getByText(/30,00\s*US\$/)).toBeInTheDocument();
+    expect(within(cardFor('Deuda total')).getByText(/30,00\s*US\$/)).toHaveClass('text-negative');
     expect(screen.getByText('Tarjeta')).toBeInTheDocument();
     expect(screen.getByText('Préstamo')).toBeInTheDocument();
     expect(screen.getByText(/Pagada el/)).toBeInTheDocument();
@@ -98,7 +98,7 @@ describe('Debts', () => {
 
     renderDebts();
 
-    expect(within(cardFor('Deuda total')).getByText(/0,00\s*US\$/)).toBeInTheDocument();
+    expect(within(cardFor('Deuda total')).getByText(/0,00\s*US\$/)).toHaveClass('text-text-muted');
     expect(screen.getByText('No tienes deudas registradas')).toBeInTheDocument();
     expect(screen.getByText('Añade tu primera deuda para llevar el control.')).toBeInTheDocument();
   });
