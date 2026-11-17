@@ -1,4 +1,5 @@
 import { Plus, Wallet } from 'lucide-react';
+import { Button, Card, Input } from '@/components/ui';
 
 // Temporary design-system preview; replaced by the real shell in T06/T07.
 export function App() {
@@ -12,7 +13,7 @@ export function App() {
         <span className="font-mono text-xs text-text-muted">v{__APP_VERSION__}</span>
       </header>
 
-      <section className="glass-card p-5" aria-labelledby="balance-title">
+      <Card className="p-5" aria-labelledby="balance-title">
         <div className="flex items-center justify-between">
           <h2 id="balance-title" className="text-sm font-medium text-text-muted">
             Balance actual
@@ -28,30 +29,26 @@ export function App() {
             Neto <span className="ml-1 font-medium text-positive tabular-nums">$930.00</span>
           </p>
         </div>
-      </section>
+      </Card>
 
-      <section className="glass-card glass-card--strong p-5" aria-labelledby="expense-title">
+      <Card strength="strong" className="p-5" aria-labelledby="expense-title">
         <h2 id="expense-title" className="text-sm font-medium text-text-muted">
           Registrar gasto
         </h2>
-        <label htmlFor="demo-amount" className="mt-4 block text-sm font-medium">
-          Monto
-        </label>
-        <input
-          id="demo-amount"
-          type="text"
-          inputMode="decimal"
-          placeholder="0.00"
-          className="mt-2 w-full rounded-md border border-border bg-surface px-3 py-2 text-text placeholder:text-text-muted focus:border-accent focus:outline-none"
-        />
-        <button
-          type="button"
-          className="mt-3 inline-flex min-h-11 items-center gap-2 rounded-md bg-accent px-4 text-sm font-semibold text-text-inverse transition-colors hover:bg-accent-strong"
-        >
+        <div className="mt-4">
+          <Input
+            id="demo-amount"
+            label="Monto"
+            type="text"
+            inputMode="decimal"
+            placeholder="0.00"
+          />
+        </div>
+        <Button className="mt-3">
           <Plus aria-hidden="true" className="size-4" />
           Registrar gasto
-        </button>
-      </section>
+        </Button>
+      </Card>
     </main>
   );
 }
