@@ -8,6 +8,11 @@ export function getLocalDateString(date = new Date()): string {
   return `${year}-${month}-${day}`;
 }
 
+export function addDaysToDate(value: string, days: number): string {
+  const [year, month, day] = value.split('-').map(Number);
+  return getLocalDateString(new Date(year, month - 1, day + days));
+}
+
 export function isValidLocalDate(value: string): boolean {
   const match = LOCAL_DATE_PATTERN.exec(value);
 
