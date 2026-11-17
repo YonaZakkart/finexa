@@ -10,6 +10,7 @@ describe('App', () => {
     expect(screen.getByText('Balance actual')).toBeInTheDocument();
     expect(screen.getByLabelText('Monto')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: /registrar gasto/i })).toBeInTheDocument();
+    expect(screen.getByRole('combobox', { name: 'Idioma' })).toBeInTheDocument();
     expect(screen.getByText(`v${__APP_VERSION__}`)).toBeInTheDocument();
     expect(document.querySelector('.glass-card')).toBeInTheDocument();
   });

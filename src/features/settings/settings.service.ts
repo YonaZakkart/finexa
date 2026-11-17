@@ -1,4 +1,5 @@
 import { db } from '@/lib/db';
+import { detectLanguage } from '@/lib/language';
 import type { Settings } from '@/types';
 
 export const SETTINGS_ID = 'app' as const;
@@ -8,7 +9,7 @@ export function createDefaultSettings(): Settings {
 
   return {
     id: SETTINGS_ID,
-    language: 'en',
+    language: detectLanguage(),
     theme: 'glass-dark',
     currency: 'USD',
     onboardingCompleted: false,
