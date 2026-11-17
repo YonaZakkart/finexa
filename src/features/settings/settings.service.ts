@@ -32,17 +32,19 @@ export async function getSettings(): Promise<Settings> {
 
 export type SettingsPatch = Partial<Omit<Settings, 'id' | 'createdAt' | 'updatedAt'>>;
 
-export async function updateSettings(patch: SettingsPatch): Promise<Settings> {
-  return db.transaction('rw', db.settings, async () => {
-    const current = (await db.settings.get(SETTINGS_ID)) ?? createDefaultSettings();
-    const updated: Settings = {
-      ...current,
-      ...patch,
-      id: SETTINGS_ID,
-      updatedAt: new Date().toISOString(),
-    };
+export async function putSettings(patch: SettingsPatch): Promise<Settings> {
+  const current = (await db.settings.get(SETTINGS_ID)) ?? createDefaultSettings();
+  const updated: Settings = {
+    ...current,
+    ...patch,
+    id: SETTINGS_ID,
+    updatedAt: new Date().toISOString(),
+  };
 
-    await db.settings.put(updated);
-    return updated;
-  });
+  await db.settings.put(updated);
+  return updated;
+}
+
+export async function updateSettings(patch: SettingsPatch): Promise<Settings> {
+  return db.transaction('rw', db.settings, () => putSettings(patch));
 }

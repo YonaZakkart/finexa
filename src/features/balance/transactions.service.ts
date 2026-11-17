@@ -12,31 +12,25 @@ export type ExpensePatch = Partial<
   Pick<Transaction, 'amount' | 'category' | 'subcategory' | 'note' | 'date'>
 >;
 
-async function syncStore(): Promise<void> {
-  const [transactions, debts] = await Promise.all([db.transactions.toArray(), db.debts.toArray()]);
-  const { setTransactions, setDebts } = useAppStore.getState();
-
-  setTransactions(transactions);
-  setDebts(debts);
-}
-
-export async function record(input: NewTransaction): Promise<Transaction> {
+export async function insertTransaction(input: NewTransaction): Promise<Transaction> {
   const normalized = { ...input, amount: roundMoney(input.amount) };
   assertValidTransaction(normalized);
 
-  const transaction = await db.transaction('rw', db.transactions, async () => {
-    if (normalized.type === 'initial_balance') {
-      const existing = await db.transactions.where('type').equals('initial_balance').count();
+  if (normalized.type === 'initial_balance') {
+    const existing = await db.transactions.where('type').equals('initial_balance').count();
 
-      if (existing > 0) {
-        throw new TransactionError('initialBalanceExists');
-      }
+    if (existing > 0) {
+      throw new TransactionError('initialBalanceExists');
     }
+  }
 
-    return createTransaction(normalized);
-  });
+  return createTransaction(normalized);
+}
 
-  await syncStore();
+export async function record(input: NewTransaction): Promise<Transaction> {
+  const transaction = await db.transaction('rw', db.transactions, () => insertTransaction(input));
+
+  await useAppStore.getState().sync();
   return transaction;
 }
 
@@ -92,7 +86,7 @@ export async function updateExpense(
     }
   });
 
-  await syncStore();
+  await useAppStore.getState().sync();
 }
 
 export async function payDebt(id: string, affectsBalance: boolean): Promise<void> {
@@ -121,5 +115,5 @@ export async function payDebt(id: string, affectsBalance: boolean): Promise<void
     }
   });
 
-  await syncStore();
+  await useAppStore.getState().sync();
 }
