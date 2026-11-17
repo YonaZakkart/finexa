@@ -57,8 +57,8 @@ export async function updateExpense(
       amount: nextAmount,
       date: patch.date ?? current.date,
       category: patch.category ?? current.category,
-      subcategory: patch.subcategory ?? current.subcategory,
-      note: patch.note ?? current.note,
+      subcategory: 'subcategory' in patch ? patch.subcategory : current.subcategory,
+      note: 'note' in patch ? patch.note : current.note,
       relatedDebtId: current.relatedDebtId,
     };
 

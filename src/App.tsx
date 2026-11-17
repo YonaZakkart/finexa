@@ -15,10 +15,8 @@ const Dashboard = lazy(() =>
 const NewExpense = lazy(() =>
   import('@/features/expenses/NewExpense').then((m) => ({ default: m.NewExpense }))
 );
-const EditExpensePlaceholder = lazy(() =>
-  import('@/features/expenses/EditExpensePlaceholder').then((m) => ({
-    default: m.EditExpensePlaceholder,
-  }))
+const EditExpense = lazy(() =>
+  import('@/features/expenses/EditExpense').then((m) => ({ default: m.EditExpense }))
 );
 const History = lazy(() =>
   import('@/features/expenses/History').then((m) => ({ default: m.History }))
@@ -125,7 +123,7 @@ function AppRoutes() {
         >
           <Route path="/" element={<Dashboard />} />
           <Route path="/expenses/new" element={<NewExpense />} />
-          <Route path="/expenses/:id/edit" element={<EditExpensePlaceholder />} />
+          <Route path="/expenses/:id/edit" element={<EditExpense />} />
           <Route path="/history" element={<History />} />
           <Route path="/summary" element={<Summary />} />
           <Route path="/debts" element={<Debts />} />
