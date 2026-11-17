@@ -7,6 +7,7 @@ declare module 'i18next' {
       common: Record<string, string>;
       dashboard: Record<string, string>;
       expenses: Record<string, string>;
+      categories: Record<string, string>;
       debts: Record<string, string>;
       summary: Record<string, string>;
       onboarding: Record<string, string>;

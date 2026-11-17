@@ -1,3 +1,5 @@
+import type { Transaction } from '@/types';
+
 export interface Subcategory {
   id: string;
   labelKey: string;
@@ -13,139 +15,179 @@ export interface Category {
 export const categories: Category[] = [
   {
     id: 'mobility',
-    labelKey: 'categories.mobility',
+    labelKey: 'mobility',
     colorToken: '#3b82f6',
     subcategories: [
-      { id: 'mobility.public_transport', labelKey: 'categories.mobility.public_transport' },
-      { id: 'mobility.fuel', labelKey: 'categories.mobility.fuel' },
-      { id: 'mobility.taxi_app', labelKey: 'categories.mobility.taxi_app' },
-      { id: 'mobility.parking', labelKey: 'categories.mobility.parking' },
+      { id: 'mobility.public_transport', labelKey: 'subcategories.mobility.public_transport' },
+      { id: 'mobility.fuel', labelKey: 'subcategories.mobility.fuel' },
+      { id: 'mobility.taxi_app', labelKey: 'subcategories.mobility.taxi_app' },
+      { id: 'mobility.parking', labelKey: 'subcategories.mobility.parking' },
     ],
   },
   {
     id: 'daily',
-    labelKey: 'categories.daily',
+    labelKey: 'daily',
     colorToken: '#10b981',
     subcategories: [
-      { id: 'daily.food', labelKey: 'categories.daily.food' },
-      { id: 'daily.coffee_snacks', labelKey: 'categories.daily.coffee_snacks' },
-      { id: 'daily.other', labelKey: 'categories.daily.other' },
+      { id: 'daily.food', labelKey: 'subcategories.daily.food' },
+      { id: 'daily.coffee_snacks', labelKey: 'subcategories.daily.coffee_snacks' },
+      { id: 'daily.other', labelKey: 'subcategories.daily.other' },
     ],
   },
   {
     id: 'utilities',
-    labelKey: 'categories.utilities',
+    labelKey: 'utilities',
     colorToken: '#f59e0b',
     subcategories: [
-      { id: 'utilities.water', labelKey: 'categories.utilities.water' },
-      { id: 'utilities.electricity', labelKey: 'categories.utilities.electricity' },
-      { id: 'utilities.home_internet', labelKey: 'categories.utilities.home_internet' },
-      { id: 'utilities.mobile_internet', labelKey: 'categories.utilities.mobile_internet' },
-      { id: 'utilities.gas', labelKey: 'categories.utilities.gas' },
+      { id: 'utilities.water', labelKey: 'subcategories.utilities.water' },
+      { id: 'utilities.electricity', labelKey: 'subcategories.utilities.electricity' },
+      { id: 'utilities.home_internet', labelKey: 'subcategories.utilities.home_internet' },
+      { id: 'utilities.mobile_internet', labelKey: 'subcategories.utilities.mobile_internet' },
+      { id: 'utilities.gas', labelKey: 'subcategories.utilities.gas' },
     ],
   },
   {
     id: 'personal',
-    labelKey: 'categories.personal',
+    labelKey: 'personal',
     colorToken: '#ec4899',
     subcategories: [
-      { id: 'personal.clothing', labelKey: 'categories.personal.clothing' },
-      { id: 'personal.accessories', labelKey: 'categories.personal.accessories' },
-      { id: 'personal.hygiene', labelKey: 'categories.personal.hygiene' },
-      { id: 'personal.beauty', labelKey: 'categories.personal.beauty' },
+      { id: 'personal.clothing', labelKey: 'subcategories.personal.clothing' },
+      { id: 'personal.accessories', labelKey: 'subcategories.personal.accessories' },
+      { id: 'personal.hygiene', labelKey: 'subcategories.personal.hygiene' },
+      { id: 'personal.beauty', labelKey: 'subcategories.personal.beauty' },
     ],
   },
   {
     id: 'health',
-    labelKey: 'categories.health',
+    labelKey: 'health',
     colorToken: '#ef4444',
     subcategories: [
-      { id: 'health.medical_consultation', labelKey: 'categories.health.medical_consultation' },
-      { id: 'health.medicines', labelKey: 'categories.health.medicines' },
-      { id: 'health.treatment', labelKey: 'categories.health.treatment' },
-      { id: 'health.insurance', labelKey: 'categories.health.insurance' },
+      {
+        id: 'health.medical_consultation',
+        labelKey: 'subcategories.health.medical_consultation',
+      },
+      { id: 'health.medicines', labelKey: 'subcategories.health.medicines' },
+      { id: 'health.treatment', labelKey: 'subcategories.health.treatment' },
+      { id: 'health.insurance', labelKey: 'subcategories.health.insurance' },
     ],
   },
   {
     id: 'pets',
-    labelKey: 'categories.pets',
+    labelKey: 'pets',
     colorToken: '#8b5cf6',
     subcategories: [
-      { id: 'pets.food', labelKey: 'categories.pets.food' },
-      { id: 'pets.medicine', labelKey: 'categories.pets.medicine' },
-      { id: 'pets.veterinary', labelKey: 'categories.pets.veterinary' },
-      { id: 'pets.other', labelKey: 'categories.pets.other' },
+      { id: 'pets.food', labelKey: 'subcategories.pets.food' },
+      { id: 'pets.medicine', labelKey: 'subcategories.pets.medicine' },
+      { id: 'pets.veterinary', labelKey: 'subcategories.pets.veterinary' },
+      { id: 'pets.other', labelKey: 'subcategories.pets.other' },
     ],
   },
   {
     id: 'hobby',
-    labelKey: 'categories.hobby',
+    labelKey: 'hobby',
     colorToken: '#06b6d4',
     subcategories: [
-      { id: 'hobby.purchases', labelKey: 'categories.hobby.purchases' },
-      { id: 'hobby.repairs', labelKey: 'categories.hobby.repairs' },
-      { id: 'hobby.tickets', labelKey: 'categories.hobby.tickets' },
-      { id: 'hobby.sports', labelKey: 'categories.hobby.sports' },
+      { id: 'hobby.purchases', labelKey: 'subcategories.hobby.purchases' },
+      { id: 'hobby.repairs', labelKey: 'subcategories.hobby.repairs' },
+      { id: 'hobby.tickets', labelKey: 'subcategories.hobby.tickets' },
+      { id: 'hobby.sports', labelKey: 'subcategories.hobby.sports' },
     ],
   },
   {
     id: 'subscriptions',
-    labelKey: 'categories.subscriptions',
+    labelKey: 'subscriptions',
     colorToken: '#84cc16',
     subcategories: [
-      { id: 'subscriptions.entertainment', labelKey: 'categories.subscriptions.entertainment' },
-      { id: 'subscriptions.ai', labelKey: 'categories.subscriptions.ai' },
-      { id: 'subscriptions.music', labelKey: 'categories.subscriptions.music' },
-      { id: 'subscriptions.software', labelKey: 'categories.subscriptions.software' },
-      { id: 'subscriptions.other', labelKey: 'categories.subscriptions.other' },
+      {
+        id: 'subscriptions.entertainment',
+        labelKey: 'subcategories.subscriptions.entertainment',
+      },
+      { id: 'subscriptions.ai', labelKey: 'subcategories.subscriptions.ai' },
+      { id: 'subscriptions.music', labelKey: 'subcategories.subscriptions.music' },
+      { id: 'subscriptions.software', labelKey: 'subcategories.subscriptions.software' },
+      { id: 'subscriptions.other', labelKey: 'subcategories.subscriptions.other' },
     ],
   },
   {
     id: 'work',
-    labelKey: 'categories.work',
+    labelKey: 'work',
     colorToken: '#6366f1',
     subcategories: [
-      { id: 'work.tools', labelKey: 'categories.work.tools' },
-      { id: 'work.repairs', labelKey: 'categories.work.repairs' },
-      { id: 'work.materials', labelKey: 'categories.work.materials' },
-      { id: 'work.transport', labelKey: 'categories.work.transport' },
+      { id: 'work.tools', labelKey: 'subcategories.work.tools' },
+      { id: 'work.repairs', labelKey: 'subcategories.work.repairs' },
+      { id: 'work.materials', labelKey: 'subcategories.work.materials' },
+      { id: 'work.transport', labelKey: 'subcategories.work.transport' },
     ],
   },
   {
     id: 'tech',
-    labelKey: 'categories.tech',
+    labelKey: 'tech',
     colorToken: '#14b8a6',
     subcategories: [
-      { id: 'tech.hardware', labelKey: 'categories.tech.hardware' },
-      { id: 'tech.software', labelKey: 'categories.tech.software' },
-      { id: 'tech.maintenance', labelKey: 'categories.tech.maintenance' },
-      { id: 'tech.repairs', labelKey: 'categories.tech.repairs' },
+      { id: 'tech.hardware', labelKey: 'subcategories.tech.hardware' },
+      { id: 'tech.software', labelKey: 'subcategories.tech.software' },
+      { id: 'tech.maintenance', labelKey: 'subcategories.tech.maintenance' },
+      { id: 'tech.repairs', labelKey: 'subcategories.tech.repairs' },
     ],
   },
   {
     id: 'housing',
-    labelKey: 'categories.housing',
+    labelKey: 'housing',
     colorToken: '#f97316',
     subcategories: [
-      { id: 'housing.rent', labelKey: 'categories.housing.rent' },
-      { id: 'housing.maintenance', labelKey: 'categories.housing.maintenance' },
-      { id: 'housing.furniture', labelKey: 'categories.housing.furniture' },
+      { id: 'housing.rent', labelKey: 'subcategories.housing.rent' },
+      { id: 'housing.maintenance', labelKey: 'subcategories.housing.maintenance' },
+      { id: 'housing.furniture', labelKey: 'subcategories.housing.furniture' },
     ],
   },
   {
     id: 'education',
-    labelKey: 'categories.education',
+    labelKey: 'education',
     colorToken: '#eab308',
     subcategories: [
-      { id: 'education.courses', labelKey: 'categories.education.courses' },
-      { id: 'education.books', labelKey: 'categories.education.books' },
-      { id: 'education.materials', labelKey: 'categories.education.materials' },
+      { id: 'education.courses', labelKey: 'subcategories.education.courses' },
+      { id: 'education.books', labelKey: 'subcategories.education.books' },
+      { id: 'education.materials', labelKey: 'subcategories.education.materials' },
     ],
   },
   {
     id: 'other',
-    labelKey: 'categories.other',
+    labelKey: 'other',
     colorToken: '#94a3b8',
     subcategories: [],
   },
 ];
+
+export function getCategory(id: string): Category | undefined {
+  return categories.find((category) => category.id === id);
+}
+
+export function getSubcategory(categoryId: string, subcategoryId: string): Subcategory | undefined {
+  return getCategory(categoryId)?.subcategories.find(
+    (subcategory) => subcategory.id === subcategoryId
+  );
+}
+
+export function isValidCategory(id: string): boolean {
+  return getCategory(id) !== undefined;
+}
+
+export function isValidSubcategory(categoryId: string, subcategoryId: string): boolean {
+  return getSubcategory(categoryId, subcategoryId) !== undefined;
+}
+
+export function groupExpensesByCategory(
+  transactions: Transaction[]
+): Record<string, Transaction[]> {
+  const groups: Record<string, Transaction[]> = {};
+
+  for (const transaction of transactions) {
+    if (transaction.type !== 'expense' || !transaction.category) {
+      continue;
+    }
+
+    groups[transaction.category] = [...(groups[transaction.category] ?? []), transaction];
+  }
+
+  return groups;
+}

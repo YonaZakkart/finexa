@@ -6,10 +6,11 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { Input } from '@/components/ui/Input';
 import { Select } from '@/components/ui/Select';
-import { categories } from '@/features/expenses/categories';
+import { categories, getCategory } from '@/features/expenses/categories';
 
 export function NewExpense() {
   const { t } = useTranslation('expenses');
+  const { t: tCategories } = useTranslation('categories');
   const navigate = useNavigate();
   const [amount, setAmount] = useState('');
   const [category, setCategory] = useState('');
@@ -17,9 +18,7 @@ export function NewExpense() {
   const [note, setNote] = useState('');
   const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
 
-  const subcategories = category
-    ? (categories.find((c) => c.id === category)?.subcategories ?? [])
-    : [];
+  const subcategories = category ? (getCategory(category)?.subcategories ?? []) : [];
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
@@ -74,7 +73,7 @@ export function NewExpense() {
               <option value="">{t('selectCategory')}</option>
               {categories.map((c) => (
                 <option key={c.id} value={c.id}>
-                  {t(c.labelKey)}
+                  {tCategories(c.labelKey)}
                 </option>
               ))}
             </Select>
@@ -89,7 +88,7 @@ export function NewExpense() {
               <option value="">{t('selectSubcategory')}</option>
               {subcategories.map((s) => (
                 <option key={s.id} value={s.id}>
-                  {t(s.labelKey)}
+                  {tCategories(s.labelKey)}
                 </option>
               ))}
             </Select>
