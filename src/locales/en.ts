@@ -114,5 +114,7 @@ export const en = {
     transactionNotFound: 'The transaction does not exist',
     notAnExpense: 'Only expenses can be edited',
     initialBalanceExists: 'The initial balance was already recorded',
+    invalidDebtName: 'The debt name must be between 1 and 80 characters',
+    invalidSalary: 'The salary must be greater than zero',
   },
 } as const;

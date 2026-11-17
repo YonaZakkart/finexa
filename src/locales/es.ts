@@ -114,5 +114,7 @@ export const es = {
     transactionNotFound: 'La transacción no existe',
     notAnExpense: 'Solo se pueden editar gastos',
     initialBalanceExists: 'El balance inicial ya fue registrado',
+    invalidDebtName: 'El nombre de la deuda debe tener entre 1 y 80 caracteres',
+    invalidSalary: 'El salario debe ser mayor que cero',
   },
 } as const;
