@@ -1,6 +1,8 @@
 import { lazy, useEffect } from 'react';
+import { useTranslation } from 'react-i18next';
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom';
 import { AppShell } from '@/components/layout/AppShell';
+import { Button } from '@/components/ui/Button';
 import { Skeleton } from '@/components/ui/Skeleton';
 import { useAppStore } from '@/stores/app.store';
 
@@ -39,22 +41,40 @@ function LoadingScreen() {
   );
 }
 
-function useAppHydration(): boolean {
+function HydrationError({ onRetry }: { onRetry: () => Promise<void> }) {
+  const { t } = useTranslation('common');
+
+  return (
+    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col items-center justify-center gap-4 p-6 text-center">
+      <p role="alert" className="text-sm text-negative">
+        {t('loadError')}
+      </p>
+      <Button onClick={() => void onRetry()}>{t('retry')}</Button>
+    </main>
+  );
+}
+
+function useAppHydration() {
   const hydrated = useAppStore((state) => state.hydrated);
+  const error = useAppStore((state) => state.error);
   const hydrate = useAppStore((state) => state.hydrate);
 
   useEffect(() => {
-    if (!hydrated) {
+    if (!hydrated && !error) {
       void hydrate();
     }
-  }, [hydrated, hydrate]);
+  }, [hydrated, error, hydrate]);
 
-  return hydrated;
+  return { hydrated, error, hydrate };
 }
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
-  const hydrated = useAppHydration();
+  const { hydrated, error, hydrate } = useAppHydration();
   const onboardingCompleted = useAppStore((state) => state.settings?.onboardingCompleted);
+
+  if (error) {
+    return <HydrationError onRetry={hydrate} />;
+  }
 
   if (!hydrated) {
     return <LoadingScreen />;
@@ -68,8 +88,12 @@ function ProtectedRoute({ children }: { children: React.ReactNode }) {
 }
 
 function OnboardingRoute() {
-  const hydrated = useAppHydration();
+  const { hydrated, error, hydrate } = useAppHydration();
   const onboardingCompleted = useAppStore((state) => state.settings?.onboardingCompleted);
+
+  if (error) {
+    return <HydrationError onRetry={hydrate} />;
+  }
 
   if (!hydrated) {
     return <LoadingScreen />;
