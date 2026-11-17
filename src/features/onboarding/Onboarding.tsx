@@ -22,6 +22,7 @@ const STEPS: Step[] = [
 
 export function Onboarding() {
   const { t } = useTranslation('onboarding');
+  const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
   const [stepIndex, setStepIndex] = useState(0);
   const [userName, setUserName] = useState('');
@@ -32,8 +33,8 @@ export function Onboarding() {
   const [salaryFrequency, setSalaryFrequency] = useState<'monthly' | 'biweekly'>('monthly');
   const [paymentDay, setPaymentDay] = useState('');
   const [balance, setBalance] = useState('');
-  const [debts, setDebts] = useState<Array<{ name: string; amount: string }>>([
-    { name: '', amount: '' },
+  const [debts, setDebts] = useState<Array<{ id: string; name: string; amount: string }>>([
+    { id: crypto.randomUUID(), name: '', amount: '' },
   ]);
 
   const currentStep = STEPS[stepIndex];
@@ -169,23 +170,23 @@ export function Onboarding() {
                 variant="ghost"
                 size="sm"
                 onClick={() => {
-                  setDebts([...debts, { name: '', amount: '' }]);
+                  setDebts([...debts, { id: crypto.randomUUID(), name: '', amount: '' }]);
                 }}
               >
                 <PlusCircle aria-hidden="true" className="size-4" />
                 {t('addDebt')}
               </Button>
             </header>
-            {debts.map((debt, i) => (
-              <div key={i} className="flex gap-2">
+            {debts.map((debt) => (
+              <div key={debt.id} className="flex gap-2">
                 <Input
                   label={t('debtName')}
                   placeholder={t('debtNamePlaceholder')}
                   value={debt.name}
                   onChange={(e) => {
-                    const d = [...debts];
-                    d[i].name = e.target.value;
-                    setDebts(d);
+                    setDebts(
+                      debts.map((d) => (d.id === debt.id ? { ...d, name: e.target.value } : d))
+                    );
                   }}
                 />
                 <Input
@@ -197,9 +198,9 @@ export function Onboarding() {
                   placeholder="0.00"
                   value={debt.amount}
                   onChange={(e) => {
-                    const d = [...debts];
-                    d[i].amount = e.target.value;
-                    setDebts(d);
+                    setDebts(
+                      debts.map((d) => (d.id === debt.id ? { ...d, amount: e.target.value } : d))
+                    );
                   }}
                 />
               </div>
@@ -241,11 +242,11 @@ export function Onboarding() {
         aria-valuenow={stepIndex + 1}
         aria-valuemin={1}
         aria-valuemax={STEPS.length}
-        aria-label={useTranslation('onboarding').t('progress')}
+        aria-label={t('progress')}
       >
-        {STEPS.map((_, i) => (
+        {STEPS.map((step, i) => (
           <div
-            key={i}
+            key={step}
             className="flex-1 h-1.5 rounded-full transition-colors"
             style={{
               backgroundColor: i <= stepIndex ? 'var(--color-accent)' : 'var(--color-border)',
@@ -258,7 +259,7 @@ export function Onboarding() {
 
       <div className="flex gap-2">
         <Button variant="ghost" className="flex-1" onClick={handleSkip}>
-          {useTranslation('onboarding').t('skip')}
+          {t('skip')}
         </Button>
         <Button
           className="flex-1"
@@ -268,9 +269,7 @@ export function Onboarding() {
             (currentStep === 'salary' && employmentStatus === 'employed' && !salary)
           }
         >
-          {isLastStep
-            ? useTranslation('onboarding').t('finish')
-            : useTranslation('common').t('confirm')}
+          {isLastStep ? t('finish') : tCommon('confirm')}
           <ArrowRight aria-hidden="true" className="size-4" />
         </Button>
       </div>

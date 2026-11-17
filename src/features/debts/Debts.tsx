@@ -72,7 +72,7 @@ export function Debts() {
                 <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide">
                   {t('active')}
                 </h3>
-                <ul className="space-y-2" role="list">
+                <ul className="space-y-2">
                   {activeDebts.map((debt) => (
                     <li
                       key={debt.id}
@@ -115,7 +115,7 @@ export function Debts() {
                 <h3 className="text-xs font-medium text-text-muted uppercase tracking-wide">
                   {t('paid')}
                 </h3>
-                <ul className="space-y-2" role="list">
+                <ul className="space-y-2">
                   {paidDebts.map((debt) => (
                     <li
                       key={debt.id}
@@ -152,6 +152,7 @@ export function Debts() {
               {t('addDebt')}
             </h3>
             <button
+              type="button"
               onClick={() => setShowForm(false)}
               className="p-1 rounded-md hover:bg-surface"
               aria-label={tCommon('close')}

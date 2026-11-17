@@ -104,7 +104,7 @@ export function NewExpense() {
           />
 
           <div className="space-y-1.5">
-            <label id="note-label" className="block text-sm font-medium">
+            <label htmlFor="note-input" className="block text-sm font-medium">
               {t('note')}
             </label>
             <textarea
