@@ -4,21 +4,14 @@ import { useNavigate } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import { formatCurrency } from '@/lib/format';
 import { useAppStore } from '@/stores/app.store';
+import { selectBalance, selectNetBalance, selectTotalDebt } from '@/stores/selectors';
 
 function BalanceCard() {
   const { t } = useTranslation('dashboard');
-  const { transactions, debts, settings } = useAppStore();
-  const balance = transactions
-    .filter((t) => t.direction === 'credit')
-    .reduce((sum, t) => sum + t.amount, 0);
-  const expenses = transactions
-    .filter((t) => t.direction === 'debit')
-    .reduce((sum, t) => sum + t.amount, 0);
-  const currentBalance = balance - expenses;
-  const totalDebt = debts
-    .filter((d) => d.status === 'active')
-    .reduce((sum, d) => sum + d.amount, 0);
-  const netBalance = currentBalance - totalDebt;
+  const currentBalance = useAppStore(selectBalance);
+  const totalDebt = useAppStore(selectTotalDebt);
+  const netBalance = useAppStore(selectNetBalance);
+  const language = useAppStore((state) => state.settings?.language ?? 'es');
 
   return (
     <Card className="p-5" aria-labelledby="balance-title">
@@ -29,19 +22,19 @@ function BalanceCard() {
         <Wallet aria-hidden="true" className="size-5 text-accent" />
       </div>
       <p className="mt-3 text-4xl font-semibold tracking-tight tabular-nums">
-        {formatCurrency(currentBalance, settings?.language ?? 'es')}
+        {formatCurrency(currentBalance, language)}
       </p>
       <div className="mt-4 flex flex-wrap gap-6 text-sm">
         <div className="flex items-center gap-2 text-text-muted">
           <TrendingDown aria-hidden="true" className="size-4 text-negative" />
           <span>
-            {t('debt')}: {formatCurrency(-totalDebt, settings?.language ?? 'es')}
+            {t('debt')}: {formatCurrency(-totalDebt, language)}
           </span>
         </div>
         <div className="flex items-center gap-2 text-text-muted">
           <MinusCircle aria-hidden="true" className="size-4 text-text-muted" />
           <span>
-            {t('net')}: {formatCurrency(netBalance, settings?.language ?? 'es')}
+            {t('net')}: {formatCurrency(netBalance, language)}
           </span>
         </div>
       </div>
