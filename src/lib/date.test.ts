@@ -1,10 +1,19 @@
 import { describe, expect, it } from 'vitest';
-import { getLocalDateString, isValidLocalDate } from './date';
+import { addDaysToDate, getLocalDateString, isValidLocalDate } from './date';
 
 describe('getLocalDateString', () => {
   it('formats a local date as YYYY-MM-DD', () => {
     expect(getLocalDateString(new Date(2026, 10, 7))).toBe('2026-11-07');
     expect(getLocalDateString(new Date(2026, 0, 31))).toBe('2026-01-31');
+  });
+});
+
+describe('addDaysToDate', () => {
+  it('moves within the month and across boundaries', () => {
+    expect(addDaysToDate('2026-11-17', -1)).toBe('2026-11-16');
+    expect(addDaysToDate('2026-11-17', 1)).toBe('2026-11-18');
+    expect(addDaysToDate('2026-01-01', -1)).toBe('2025-12-31');
+    expect(addDaysToDate('2024-02-28', 1)).toBe('2024-02-29');
   });
 });
 

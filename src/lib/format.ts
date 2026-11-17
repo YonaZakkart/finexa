@@ -18,6 +18,10 @@ export function formatDate(value: string | Date, language: SupportedLanguage): s
   return formatDateFns(toLocalDate(value), 'PP', { locale: locales[language] });
 }
 
+export function formatTime(value: string | Date): string {
+  return formatDateFns(value instanceof Date ? value : new Date(value), 'HH:mm');
+}
+
 function toLocalDate(value: string | Date): Date {
   if (value instanceof Date) {
     return value;

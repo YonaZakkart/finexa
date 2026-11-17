@@ -19,6 +19,11 @@ export async function updateTransaction(id: string, patch: TransactionPatch): Pr
   await db.transactions.update(id, patch);
 }
 
+export async function listExpensesByDate(date: string): Promise<Transaction[]> {
+  const rows = await db.transactions.where('[date+type]').equals([date, 'expense']).toArray();
+  return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));
+}
+
 export async function listTransactionsByDate(date: string): Promise<Transaction[]> {
   const rows = await db.transactions.where('date').equals(date).toArray();
   return rows.sort((a, b) => b.createdAt.localeCompare(a.createdAt));

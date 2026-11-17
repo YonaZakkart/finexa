@@ -4,6 +4,7 @@ import { createDebt, listDebts, updateDebt } from '@/features/debts/debts.reposi
 import { getSettings, updateSettings } from '@/features/settings/settings.service';
 import {
   createTransaction,
+  listExpensesByDate,
   listTransactionsBetween,
   listTransactionsByDate,
   type NewTransaction,
@@ -80,6 +81,52 @@ describe('transactions repository', () => {
     expect(await listTransactionsByDate('2026-11-16')).toHaveLength(2);
     expect(await listTransactionsByDate('2026-11-15')).toHaveLength(0);
     expect(await listTransactionsBetween('2026-11-15', '2026-11-17')).toHaveLength(2);
+  });
+
+  it('lists only expenses for a date using the compound index', async () => {
+    await db.transactions.bulkAdd([
+      {
+        id: 'expense-1',
+        type: 'expense',
+        direction: 'debit',
+        amount: 10,
+        date: '2026-11-16',
+        category: 'daily',
+        subcategory: 'daily.food',
+        createdAt: '2026-11-16T10:00:00.000Z',
+      },
+      {
+        id: 'expense-2',
+        type: 'expense',
+        direction: 'debit',
+        amount: 20,
+        date: '2026-11-16',
+        category: 'mobility',
+        subcategory: 'mobility.fuel',
+        createdAt: '2026-11-16T12:00:00.000Z',
+      },
+      {
+        id: 'income-1',
+        type: 'income',
+        direction: 'credit',
+        amount: 50,
+        date: '2026-11-16',
+        createdAt: '2026-11-16T13:00:00.000Z',
+      },
+      {
+        id: 'expense-3',
+        type: 'expense',
+        direction: 'debit',
+        amount: 30,
+        date: '2026-11-17',
+        category: 'other',
+        createdAt: '2026-11-17T10:00:00.000Z',
+      },
+    ]);
+
+    const rows = await listExpensesByDate('2026-11-16');
+
+    expect(rows.map((row) => row.id)).toEqual(['expense-2', 'expense-1']);
   });
 
   it('updates transaction fields', async () => {
