@@ -1,4 +1,7 @@
 import '@testing-library/jest-dom/vitest';
+import { initI18n } from '@/lib/i18n';
+
+await initI18n('es');
 
 // jsdom does not implement the native dialog methods yet.
 if (typeof HTMLDialogElement !== 'undefined') {
