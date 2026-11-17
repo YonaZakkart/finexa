@@ -32,9 +32,9 @@ function expense(overrides: Partial<Transaction> = {}): Transaction {
   };
 }
 
-function renderHistory() {
+function renderHistory(initialEntry = '/history') {
   return render(
-    <MemoryRouter initialEntries={['/history']}>
+    <MemoryRouter initialEntries={[initialEntry]}>
       <Routes>
         <Route path="/" element={<div>Dashboard page</div>} />
         <Route path="/history" element={<History />} />
@@ -74,6 +74,12 @@ describe('History', () => {
     expect(screen.getByText('12,50 US$')).toBeInTheDocument();
     expect(screen.getByText('13:30')).toBeInTheDocument();
     expect(screen.getAllByText('Hoy').length).toBeGreaterThan(0);
+  });
+
+  it('opens the date from the query string', async () => {
+    renderHistory('/history?date=2026-11-10');
+
+    await waitFor(() => expect(listMock).toHaveBeenCalledWith('2026-11-10'));
   });
 
   it('switches to yesterday and back to today', async () => {

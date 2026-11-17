@@ -1,6 +1,6 @@
 import { render, screen, waitFor } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
-import { MemoryRouter, Route, Routes } from 'react-router-dom';
+import { MemoryRouter, Route, Routes, useLocation } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { TransactionError } from '@/features/balance/errors';
 import { updateExpense } from '@/features/balance/transactions.service';
@@ -29,11 +29,16 @@ function expense(): Transaction {
   };
 }
 
+function HistoryMarker() {
+  const location = useLocation();
+  return <div>History page {location.search}</div>;
+}
+
 function renderEdit() {
   return render(
     <MemoryRouter initialEntries={['/expenses/expense-1/edit']}>
       <Routes>
-        <Route path="/history" element={<div>History page</div>} />
+        <Route path="/history" element={<HistoryMarker />} />
         <Route path="/expenses/:id/edit" element={<EditExpense />} />
       </Routes>
     </MemoryRouter>
@@ -84,7 +89,8 @@ describe('EditExpense', () => {
         false
       )
     );
-    await waitFor(() => expect(screen.getByText('History page')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/History page/)).toBeInTheDocument());
+    expect(screen.getByText(/date=/)).toBeInTheDocument();
   });
 
   it('applies the balance impact when accepted', async () => {
@@ -107,7 +113,7 @@ describe('EditExpense', () => {
         true
       )
     );
-    await waitFor(() => expect(screen.getByText('History page')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/History page/)).toBeInTheDocument());
   });
 
   it('keeps the balance when the impact is rejected', async () => {
@@ -204,7 +210,7 @@ describe('EditExpense', () => {
     expect(updateMock).toHaveBeenCalledTimes(1);
 
     resolveUpdate();
-    await waitFor(() => expect(screen.getByText('History page')).toBeInTheDocument());
+    await waitFor(() => expect(screen.getByText(/History page/)).toBeInTheDocument());
   });
 
   it('shows the not-found state for an unknown expense', async () => {
@@ -216,7 +222,7 @@ describe('EditExpense', () => {
 
     await user.click(screen.getByRole('button', { name: 'Volver al historial' }));
 
-    expect(screen.getByText('History page')).toBeInTheDocument();
+    expect(screen.getByText(/History page/)).toBeInTheDocument();
   });
 
   it('navigates back to the history from the form', async () => {
@@ -225,6 +231,6 @@ describe('EditExpense', () => {
 
     await user.click(screen.getByRole('button', { name: 'Volver' }));
 
-    expect(screen.getByText('History page')).toBeInTheDocument();
+    expect(screen.getByText(/History page/)).toBeInTheDocument();
   });
 });
