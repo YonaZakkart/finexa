@@ -3,6 +3,7 @@ import { useTranslation } from 'react-i18next';
 import { updateSettings } from '@/features/settings/settings.service';
 import { changeLanguage } from '@/lib/i18n';
 import { SUPPORTED_LANGUAGES, type SupportedLanguage } from '@/lib/language';
+import { useAppStore } from '@/stores/app.store';
 
 const labels = {
   es: 'spanish',
@@ -16,8 +17,11 @@ export function LanguageSwitcher() {
   const handleChange = (event: ChangeEvent<HTMLSelectElement>) => {
     const language = event.target.value as SupportedLanguage;
 
-    void changeLanguage(language)
-      .then(() => updateSettings({ language }))
+    void updateSettings({ language })
+      .then((settings) => {
+        useAppStore.getState().setSettings(settings);
+        return changeLanguage(language);
+      })
       .catch((error) => console.error('Failed to persist the language', error));
   };
 
