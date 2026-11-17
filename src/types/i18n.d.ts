@@ -1,9 +1,15 @@
 import 'i18next';
-import type { resources } from '../locales/resources';
 
 declare module 'i18next' {
   interface CustomTypeOptions {
     defaultNS: 'common';
-    resources: (typeof resources)['es'];
+    resources: {
+      common: Record<string, string>;
+      dashboard: Record<string, string>;
+      expenses: Record<string, string>;
+      debts: Record<string, string>;
+      summary: Record<string, string>;
+      onboarding: Record<string, string>;
+    };
   }
 }
