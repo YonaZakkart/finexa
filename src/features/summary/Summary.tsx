@@ -8,7 +8,7 @@ export function Summary() {
   const navigate = useNavigate();
 
   return (
-    <main className="mx-auto flex min-h-dvh w-full max-w-3xl flex-col gap-5 p-6 pb-24">
+    <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-5 p-6">
       <header>
         <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
       </header>
