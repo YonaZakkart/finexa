@@ -171,6 +171,20 @@ describe('updateExpense', () => {
     expect(selectBalance(useAppStore.getState())).toBe(-20);
   });
 
+  it('keeps untouched fields when the patch omits them', async () => {
+    const expense = await record(expenseInput({ amount: 20, note: 'Lunch' }));
+
+    await updateExpense(expense.id, { amount: 22 }, true);
+
+    expect(await db.transactions.get(expense.id)).toMatchObject({
+      amount: 22,
+      note: 'Lunch',
+      category: 'daily',
+      subcategory: 'daily.food',
+      date: DATE,
+    });
+  });
+
   it('does not create an adjustment when the amount does not change', async () => {
     const expense = await record(expenseInput({ amount: 20 }));
 

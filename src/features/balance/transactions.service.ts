@@ -70,7 +70,14 @@ export async function updateExpense(
 
     assertValidTransaction(next);
 
-    await db.transactions.put({ ...current, ...patch, amount: nextAmount });
+    await db.transactions.put({
+      ...current,
+      amount: nextAmount,
+      date: next.date,
+      category: next.category,
+      subcategory: next.subcategory,
+      note: next.note,
+    });
 
     const delta = roundMoney(nextAmount - current.amount);
 
