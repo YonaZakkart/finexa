@@ -86,6 +86,7 @@ describe('AppShell', () => {
     expect(screen.getByRole('complementary', { name: 'Navegación lateral' })).toBeInTheDocument();
     expect(screen.getByRole('navigation', { name: 'Navegación inferior' })).toBeInTheDocument();
     expect(screen.getByRole('contentinfo')).toHaveTextContent('Versión');
+    expect(screen.getByRole('contentinfo')).toHaveTextContent(__APP_VERSION__);
   });
 
   it('marks placeholder modules as coming soon', () => {
