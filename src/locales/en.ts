@@ -199,7 +199,7 @@ export const en = {
     expenseCount_other: '{{count}} expenses',
     noData: 'No data',
     noWeeklyData: 'No data for this week',
-    dailyChartComingSoon: 'The daily chart will be available soon.',
+    noDailyData: 'No data for this day',
     charts: 'Charts',
     weeklyChart: 'Weekly',
     dailyChart: 'Daily',
