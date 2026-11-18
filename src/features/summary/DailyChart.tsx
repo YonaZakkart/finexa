@@ -64,6 +64,8 @@ export function DailyChart({
                 borderRadius: 8,
                 color: 'var(--color-text)',
               }}
+              labelStyle={{ color: 'var(--color-text)' }}
+              itemStyle={{ color: 'var(--color-text)' }}
               formatter={(value, name) => {
                 const slice = chartData.find((item) => item.name === name);
 
@@ -73,10 +75,24 @@ export function DailyChart({
                 ];
               }}
             />
-            <Legend formatter={(value) => tCategories(String(value))} />
+            <Legend
+              wrapperStyle={{ color: 'var(--color-text)' }}
+              formatter={(value) => <span className="text-text">{tCategories(String(value))}</span>}
+            />
           </PieChart>
         </ResponsiveContainer>
       </div>
+      <ul className="sr-only">
+        <li>
+          {t('totalSpent')}: {formatCurrency(data.total, language)}
+        </li>
+        {data.slices.map((slice) => (
+          <li key={slice.categoryId}>
+            {tCategories(slice.labelKey)}: {formatCurrency(slice.value, language)} (
+            {slice.percentage}%)
+          </li>
+        ))}
+      </ul>
     </Card>
   );
 }

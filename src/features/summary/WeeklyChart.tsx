@@ -67,12 +67,17 @@ export function WeeklyChart({
                 borderRadius: 8,
                 color: 'var(--color-text)',
               }}
+              labelStyle={{ color: 'var(--color-text)' }}
+              itemStyle={{ color: 'var(--color-text)' }}
               formatter={(value, name) => [
                 formatCurrency(Number(value), language),
                 tCategories(String(name)),
               ]}
             />
-            <Legend formatter={(value) => tCategories(String(value))} />
+            <Legend
+              wrapperStyle={{ color: 'var(--color-text)' }}
+              formatter={(value) => <span className="text-text">{tCategories(String(value))}</span>}
+            />
             {data.categories.map((category) => (
               <Bar
                 key={category.id}
@@ -87,6 +92,23 @@ export function WeeklyChart({
           </BarChart>
         </ResponsiveContainer>
       </div>
+      <ul className="sr-only">
+        <li>
+          {t('totalSpent')}: {formatCurrency(data.total, language)}
+        </li>
+        {data.categories.map((category) => {
+          const categoryTotal = data.rows.reduce(
+            (sum, row) => sum + Number(row[category.id] ?? 0),
+            0
+          );
+
+          return (
+            <li key={category.id}>
+              {tCategories(category.labelKey)}: {formatCurrency(categoryTotal, language)}
+            </li>
+          );
+        })}
+      </ul>
     </Card>
   );
 }
