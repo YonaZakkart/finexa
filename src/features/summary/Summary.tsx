@@ -1,17 +1,19 @@
-import { BarChart3 } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate } from 'react-router-dom';
+import { useSearchParams } from 'react-router-dom';
+import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
-import { getLocalDateString } from '@/lib/date';
+import { getLocalDateString, getWeekStart } from '@/lib/date';
 import { useAppStore } from '@/stores/app.store';
 import { DailySummaryCard } from './DailySummaryCard';
+import { WeeklyChart } from './WeeklyChart';
 
 export function Summary() {
   const { t } = useTranslation('summary');
-  const navigate = useNavigate();
+  const [searchParams, setSearchParams] = useSearchParams();
   const transactions = useAppStore((state) => state.transactions);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
   const today = getLocalDateString();
+  const view = searchParams.get('view') === 'daily' ? 'daily' : 'weekly';
   const todayExpenses = transactions.filter(
     (transaction) => transaction.type === 'expense' && transaction.date === today
   );
@@ -24,29 +26,39 @@ export function Summary() {
 
       <DailySummaryCard expenses={todayExpenses} language={language} />
 
-      <Card className="p-5 space-y-4" aria-labelledby="charts-title">
-        <h3 id="charts-title" className="text-sm font-medium text-text-muted">
+      <Card className="p-4 space-y-3" aria-labelledby="charts-title">
+        <h2 id="charts-title" className="text-sm font-medium text-text-muted">
           {t('charts')}
-        </h3>
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            type="button"
-            onClick={() => navigate('/summary?view=weekly')}
-            className="flex items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 py-6 text-text font-medium hover:bg-surface-strong transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+        </h2>
+        <div className="flex gap-2">
+          <Button
+            size="sm"
+            variant={view === 'weekly' ? 'primary' : 'secondary'}
+            onClick={() => setSearchParams({ view: 'weekly' })}
           >
-            <BarChart3 aria-hidden="true" className="size-8" />
-            <span>{t('weeklyChart')}</span>
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate('/summary?view=daily')}
-            className="flex items-center justify-center gap-2 rounded-md border border-border bg-surface px-4 py-6 text-text font-medium hover:bg-surface-strong transition-colors focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
+            {t('weeklyChart')}
+          </Button>
+          <Button
+            size="sm"
+            variant={view === 'daily' ? 'primary' : 'secondary'}
+            onClick={() => setSearchParams({ view: 'daily' })}
           >
-            <BarChart3 aria-hidden="true" className="size-8" />
-            <span>{t('dailyChart')}</span>
-          </button>
+            {t('dailyChart')}
+          </Button>
         </div>
       </Card>
+
+      {view === 'weekly' ? (
+        <WeeklyChart
+          transactions={transactions}
+          weekStart={getWeekStart(today)}
+          language={language}
+        />
+      ) : (
+        <Card className="p-5 text-center">
+          <p className="text-sm text-text-muted">{t('dailyChartComingSoon')}</p>
+        </Card>
+      )}
     </main>
   );
 }

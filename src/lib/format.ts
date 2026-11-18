@@ -22,6 +22,10 @@ export function formatTime(value: string | Date): string {
   return formatDateFns(value instanceof Date ? value : new Date(value), 'HH:mm');
 }
 
+export function formatWeekday(value: string, language: SupportedLanguage): string {
+  return formatDateFns(toLocalDate(value), 'EEE', { locale: locales[language] });
+}
+
 function toLocalDate(value: string | Date): Date {
   if (value instanceof Date) {
     return value;
