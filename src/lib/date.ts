@@ -13,6 +13,12 @@ export function addDaysToDate(value: string, days: number): string {
   return getLocalDateString(new Date(year, month - 1, day + days));
 }
 
+export function getWeekStart(value: string): string {
+  const [year, month, day] = value.split('-').map(Number);
+  const dayOfWeek = new Date(year, month - 1, day).getDay();
+  return addDaysToDate(value, dayOfWeek === 0 ? -6 : 1 - dayOfWeek);
+}
+
 export function isValidLocalDate(value: string): boolean {
   const match = LOCAL_DATE_PATTERN.exec(value);
 
