@@ -131,7 +131,7 @@ export function History() {
               max={today}
               onChange={handleDateInput}
               aria-label={t('date')}
-              className="min-h-11 w-full max-w-44 rounded-md border border-border bg-surface px-2 py-1 text-sm text-text transition-colors focus:border-accent focus:outline-none"
+              className="min-h-11 w-full max-w-44 rounded-md border border-border bg-surface px-2 py-1 text-sm text-text transition-colors focus:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
             />
           </div>
           <Button

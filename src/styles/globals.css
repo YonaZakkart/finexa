@@ -51,3 +51,32 @@ textarea {
     scroll-behavior: auto !important;
   }
 }
+
+select {
+  color-scheme: dark;
+}
+
+select option {
+  background-color: var(--color-bg-elevated);
+  color: var(--color-text);
+}
+
+select option:checked {
+  background-color: var(--color-accent);
+  color: var(--color-text-inverse);
+}
+
+input[type="date"] {
+  color-scheme: dark;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

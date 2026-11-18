@@ -31,7 +31,7 @@ export function LanguageSwitcher() {
       <select
         value={current}
         onChange={handleChange}
-        className="min-h-11 cursor-pointer rounded-md border border-border bg-surface px-2 text-xs text-text transition-colors focus:border-accent focus:outline-none"
+        className="min-h-11 cursor-pointer rounded-md border border-border bg-surface px-2 text-xs text-text transition-colors focus:border-accent focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
         {SUPPORTED_LANGUAGES.map((language) => (
           <option key={language} value={language}>
