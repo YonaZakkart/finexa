@@ -15,7 +15,7 @@ export default defineConfig({
     tailwindcss(),
     VitePWA({
       registerType: 'prompt',
-      includeAssets: ['favicon.svg', 'icons/*.png'],
+      includeAssets: ['favicon.svg', 'favicon.ico', 'icons/*.png'],
       manifest: {
         name: 'Finexa',
         short_name: 'Finexa',
@@ -32,19 +32,19 @@ export default defineConfig({
         theme_color: '#061418',
         icons: [
           {
-            src: 'icons/icon-192.png',
+            src: 'icons/pwa-192.png',
             sizes: '192x192',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: 'icons/icon-512.png',
+            src: 'icons/pwa-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'any',
           },
           {
-            src: 'icons/icon-512-maskable.png',
+            src: 'icons/pwa-maskable-512.png',
             sizes: '512x512',
             type: 'image/png',
             purpose: 'maskable',
@@ -55,18 +55,18 @@ export default defineConfig({
             name: 'Registrar gasto',
             short_name: 'Gasto',
             url: '/expenses/new',
-            icons: [{ src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+            icons: [{ src: 'icons/pwa-192.png', sizes: '192x192', type: 'image/png' }],
           },
           {
             name: 'Historial',
             short_name: 'Historial',
             url: '/history',
-            icons: [{ src: 'icons/icon-192.png', sizes: '192x192', type: 'image/png' }],
+            icons: [{ src: 'icons/pwa-192.png', sizes: '192x192', type: 'image/png' }],
           },
         ],
       },
       workbox: {
-        globPatterns: ['**/*.{js,css,html,svg,png,woff2,webmanifest}'],
+        globPatterns: ['**/*.{js,css,html,svg,png,ico,woff2,webmanifest}'],
         navigateFallback: 'index.html',
         cleanupOutdatedCaches: true,
       },
