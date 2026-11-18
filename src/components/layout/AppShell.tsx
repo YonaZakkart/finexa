@@ -6,13 +6,13 @@ import {
   type LucideIcon,
   Menu,
   PanelLeftClose,
-  PanelLeftOpen,
   PlusCircle,
 } from 'lucide-react';
 import { type RefObject, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/cn';
+import { Brand } from './Brand';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { OfflineIndicator } from './OfflineIndicator';
 import { PwaUpdatePrompt } from './PwaUpdatePrompt';
@@ -152,11 +152,23 @@ function SidebarContent({
     <>
       <div
         className={cn(
-          'flex items-center border-b border-border p-4',
-          collapsed ? 'lg:justify-center' : 'justify-between'
+          'flex items-center border-b border-border',
+          collapsed ? 'p-2 lg:justify-center' : 'justify-between p-4'
         )}
       >
-        <span className={cn('font-semibold', collapsed && 'lg:hidden')}>{tCommon('appName')}</span>
+        {collapsed ? (
+          <button
+            type="button"
+            onClick={onToggleCollapse}
+            className="hidden min-h-11 min-w-11 items-center justify-center rounded-md hover:bg-surface lg:inline-flex"
+            aria-label={tCommon('expandSidebar')}
+            aria-expanded={false}
+          >
+            <Brand collapsed />
+          </button>
+        ) : (
+          <Brand />
+        )}
         {onClose ? (
           <button
             type="button"
@@ -167,19 +179,15 @@ function SidebarContent({
             <ChevronLeft aria-hidden="true" className="size-5" />
           </button>
         ) : null}
-        {onToggleCollapse ? (
+        {onToggleCollapse && !collapsed ? (
           <button
             type="button"
             onClick={onToggleCollapse}
             className="hidden min-h-11 min-w-11 items-center justify-center rounded-md text-text-muted hover:bg-surface hover:text-text lg:inline-flex"
-            aria-label={collapsed ? tCommon('expandSidebar') : tCommon('collapseSidebar')}
-            aria-expanded={!collapsed}
+            aria-label={tCommon('collapseSidebar')}
+            aria-expanded
           >
-            {collapsed ? (
-              <PanelLeftOpen aria-hidden="true" className="size-5" />
-            ) : (
-              <PanelLeftClose aria-hidden="true" className="size-5" />
-            )}
+            <PanelLeftClose aria-hidden="true" className="size-5" />
           </button>
         ) : null}
       </div>
