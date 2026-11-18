@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { getLocalDateString, getWeekStart } from '@/lib/date';
 import { useAppStore } from '@/stores/app.store';
+import { DailyChart } from './DailyChart';
 import { DailySummaryCard } from './DailySummaryCard';
 import { WeeklyChart } from './WeeklyChart';
 
@@ -55,9 +56,7 @@ export function Summary() {
           language={language}
         />
       ) : (
-        <Card className="p-5 text-center">
-          <p className="text-sm text-text-muted">{t('dailyChartComingSoon')}</p>
-        </Card>
+        <DailyChart expenses={todayExpenses} language={language} />
       )}
     </main>
   );
