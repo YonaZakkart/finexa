@@ -14,6 +14,8 @@ import { useTranslation } from 'react-i18next';
 import { NavLink, Outlet, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/cn';
 import { LanguageSwitcher } from './LanguageSwitcher';
+import { OfflineIndicator } from './OfflineIndicator';
+import { PwaUpdatePrompt } from './PwaUpdatePrompt';
 
 const SIDEBAR_COLLAPSED_KEY = 'finexa:sidebar-collapsed';
 
@@ -414,6 +416,8 @@ export function AppShell() {
         sidebarOpen={sidebarOpen}
         menuButtonRef={menuButtonRef}
       />
+      <OfflineIndicator />
+      <PwaUpdatePrompt />
       <div className="flex min-h-0 flex-1 overflow-hidden">
         <DesktopSidebar
           collapsed={sidebarCollapsed}
