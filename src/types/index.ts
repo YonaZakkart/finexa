@@ -13,6 +13,34 @@ export type Currency = 'USD';
 export type EmploymentStatus = 'employed' | 'unemployed' | 'freelancer' | 'trader' | 'other';
 export type SalaryFrequency = 'monthly' | 'biweekly';
 export type TransactionSource = 'user' | 'edit_compensation' | 'system';
+export type PortfolioType = 'stocks' | 'etf' | 'crypto' | 'funds' | 'bonds' | 'other';
+
+export interface Portfolio {
+  id: string;
+  name: string;
+  type: PortfolioType;
+  broker: string;
+  currentBalance: number;
+  balanceUpdatedAt?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
+export interface Investment {
+  id: string;
+  portfolioId: string;
+  date: string;
+  depositTotal: number;
+  bankCommission: number;
+  brokerCommission: number;
+  availableTotal: number;
+  purchaseAmount: number;
+  purchaseCommission: number;
+  commissionFromResidual: boolean;
+  residualDelta: number;
+  note?: string;
+  createdAt: string;
+}
 
 export interface Debt {
   id: string;
