@@ -1,3 +1,4 @@
+import Dexie from 'dexie';
 import { db } from '@/lib/db';
 import type { Investment, Portfolio } from '@/types';
 
@@ -43,7 +44,10 @@ export async function createInvestment(input: NewInvestment): Promise<Investment
 }
 
 export async function listInvestments(portfolioId: string): Promise<Investment[]> {
-  const rows = await db.investments.where('portfolioId').equals(portfolioId).toArray();
+  const rows = await db.investments
+    .where('[portfolioId+date]')
+    .between([portfolioId, Dexie.minKey], [portfolioId, Dexie.maxKey])
+    .toArray();
 
   return rows.sort(
     (a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)

@@ -30,6 +30,7 @@ function normalizePortfolio(input: PortfolioInput): PortfolioInput {
 function normalizeInvestment(input: InvestmentInput): InvestmentInput {
   return {
     ...input,
+    portfolioId: input.portfolioId.trim(),
     depositTotal: roundMoney(input.depositTotal),
     bankCommission: roundMoney(input.bankCommission),
     brokerCommission: roundMoney(input.brokerCommission),

@@ -93,6 +93,20 @@ describe('updateBalance', () => {
     await expect(updateBalance('any', -1)).rejects.toMatchObject({ code: 'invalidBalance' });
   });
 
+  it('keeps the portfolio unchanged when the balance is invalid', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    await registerInvestment(investmentInput(portfolio.id));
+
+    await expect(updateBalance(portfolio.id, -1)).rejects.toMatchObject({
+      code: 'invalidBalance',
+    });
+
+    const stored = await db.portfolios.get(portfolio.id);
+
+    expect(stored?.currentBalance).toBe(0);
+    expect(stored?.balanceUpdatedAt).toBeUndefined();
+  });
+
   it('updates the balance, timestamps and store without touching transactions', async () => {
     const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
     await registerInvestment(investmentInput(portfolio.id));
@@ -114,6 +128,14 @@ describe('registerInvestment', () => {
     await expect(registerInvestment(investmentInput('missing'))).rejects.toMatchObject({
       code: 'portfolioNotFound',
     });
+  });
+
+  it('trims the portfolio id before persisting', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+
+    const investment = await registerInvestment(investmentInput(`  ${portfolio.id}  `));
+
+    expect(investment.portfolioId).toBe(portfolio.id);
   });
 
   it('rounds amounts, persists the investment and syncs the store', async () => {

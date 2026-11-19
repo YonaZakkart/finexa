@@ -76,6 +76,10 @@ export function assertValidInvestment(input: InvestmentInput, today = getLocalDa
   assertNonNegativeMoney(input.availableTotal, 'invalidAvailableTotal');
   assertNonNegativeMoney(input.purchaseAmount, 'invalidPurchase');
 
+  if (toCents(input.availableTotal) > toCents(input.depositTotal)) {
+    throw new InvestmentError('availableExceedsDeposit');
+  }
+
   if (toCents(input.purchaseAmount) > toCents(input.availableTotal)) {
     throw new InvestmentError('purchaseExceedsAvailable');
   }
