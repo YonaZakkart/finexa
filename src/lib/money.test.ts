@@ -14,6 +14,11 @@ describe('roundMoney', () => {
     expect(roundMoney(-12.5)).toBe(-12.5);
     expect(roundMoney(-0.1 - 0.2)).toBe(-0.3);
   });
+
+  it('normalizes negative zero', () => {
+    expect(roundMoney(-0)).toBe(0);
+    expect(Object.is(roundMoney(-0), 0)).toBe(true);
+  });
 });
 
 describe('toCents', () => {

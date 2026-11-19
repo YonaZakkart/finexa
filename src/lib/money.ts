@@ -1,5 +1,6 @@
 export function roundMoney(value: number): number {
-  return Math.round((value + Number.EPSILON) * 100) / 100;
+  const rounded = Math.round((value + Number.EPSILON) * 100) / 100;
+  return rounded === 0 ? 0 : rounded;
 }
 
 export function toCents(value: number): number {
