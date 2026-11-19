@@ -1,20 +1,24 @@
 import { create } from 'zustand';
 import { getSettings } from '@/features/settings/settings.service';
 import { db } from '@/lib/db';
-import type { Debt, Settings, Transaction } from '@/types';
+import type { Debt, Investment, Portfolio, Settings, Transaction } from '@/types';
 
-interface AppStore {
+export interface AppStore {
   hydrated: boolean;
   isLoading: boolean;
   error: string | null;
   settings: Settings | null;
   transactions: Transaction[];
   debts: Debt[];
+  portfolios: Portfolio[];
+  investments: Investment[];
   hydrate: () => Promise<void>;
   sync: () => Promise<void>;
   setSettings: (settings: Settings) => void;
   setTransactions: (transactions: Transaction[]) => void;
   setDebts: (debts: Debt[]) => void;
+  setPortfolios: (portfolios: Portfolio[]) => void;
+  setInvestments: (investments: Investment[]) => void;
   reset: () => void;
 }
 
@@ -25,9 +29,18 @@ const initialState = {
   settings: null,
   transactions: [],
   debts: [],
+  portfolios: [],
+  investments: [],
 } satisfies Pick<
   AppStore,
-  'hydrated' | 'isLoading' | 'error' | 'settings' | 'transactions' | 'debts'
+  | 'hydrated'
+  | 'isLoading'
+  | 'error'
+  | 'settings'
+  | 'transactions'
+  | 'debts'
+  | 'portfolios'
+  | 'investments'
 >;
 
 export const useAppStore = create<AppStore>((set, get) => ({
@@ -49,17 +62,21 @@ export const useAppStore = create<AppStore>((set, get) => ({
   },
 
   sync: async () => {
-    const [settings, transactions, debts] = await Promise.all([
+    const [settings, transactions, debts, portfolios, investments] = await Promise.all([
       getSettings(),
       db.transactions.toArray(),
       db.debts.toArray(),
+      db.portfolios.toArray(),
+      db.investments.toArray(),
     ]);
 
-    set({ settings, transactions, debts });
+    set({ settings, transactions, debts, portfolios, investments });
   },
 
   setSettings: (settings) => set({ settings }),
   setTransactions: (transactions) => set({ transactions }),
   setDebts: (debts) => set({ debts }),
+  setPortfolios: (portfolios) => set({ portfolios }),
+  setInvestments: (investments) => set({ investments }),
   reset: () => set(initialState),
 }));
