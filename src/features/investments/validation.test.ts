@@ -65,6 +65,12 @@ describe('assertValidPortfolio', () => {
     );
   });
 
+  it('accepts the maximum name and broker lengths', () => {
+    expect(() =>
+      assertValidPortfolio({ ...portfolio, name: 'a'.repeat(60), broker: 'a'.repeat(40) })
+    ).not.toThrow();
+  });
+
   it('rejects an unknown type', () => {
     expectCode(
       () => assertValidPortfolio({ ...portfolio, type: 'invalid' as PortfolioType }),
@@ -129,6 +135,13 @@ describe('assertValidInvestment', () => {
     );
   });
 
+  it('rejects an available total above the deposit', () => {
+    expectCode(
+      () => assertValidInvestment({ ...investment, availableTotal: 100.01 }, TODAY),
+      'availableExceedsDeposit'
+    );
+  });
+
   it('rejects a negative purchase and a purchase above the available total', () => {
     expectCode(
       () => assertValidInvestment({ ...investment, purchaseAmount: -0.01 }, TODAY),
@@ -174,12 +187,39 @@ describe('assertValidInvestment', () => {
     );
   });
 
-  it('accepts amounts that round to zero decimals', () => {
+  it('accepts a note of exactly 280 characters', () => {
     expect(() =>
-      assertValidInvestment({ ...investment, depositTotal: 0.005 }, TODAY)
+      assertValidInvestment({ ...investment, note: 'a'.repeat(280) }, TODAY)
+    ).not.toThrow();
+  });
+
+  it('validates amounts using cents', () => {
+    expect(() =>
+      assertValidInvestment(
+        {
+          ...investment,
+          depositTotal: 100.005,
+          availableTotal: 100,
+          purchaseAmount: 99,
+          purchaseCommission: 0.3,
+          residualDelta: 0,
+        },
+        TODAY
+      )
     ).not.toThrow();
     expectCode(
-      () => assertValidInvestment({ ...investment, depositTotal: 0.004 }, TODAY),
+      () =>
+        assertValidInvestment(
+          {
+            ...investment,
+            depositTotal: 0.004,
+            availableTotal: 0,
+            purchaseAmount: 0,
+            purchaseCommission: 0,
+            residualDelta: 0,
+          },
+          TODAY
+        ),
       'invalidDeposit'
     );
   });

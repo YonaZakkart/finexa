@@ -8,6 +8,7 @@ export type InvestmentErrorCode =
   | 'invalidDeposit'
   | 'invalidCommission'
   | 'invalidAvailableTotal'
+  | 'availableExceedsDeposit'
   | 'invalidPurchase'
   | 'purchaseExceedsAvailable'
   | 'invalidResidual'

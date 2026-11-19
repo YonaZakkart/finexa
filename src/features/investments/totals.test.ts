@@ -90,6 +90,17 @@ describe('calculatePortfolioTotals', () => {
 });
 
 describe('calculateGlobalTotals', () => {
+  it('returns zeros when there are no portfolios or investments', () => {
+    expect(calculateGlobalTotals([], [])).toEqual({
+      currentBalance: 0,
+      investedTotal: 0,
+      depositedTotal: 0,
+      commissionsTotal: 0,
+      residualTotal: 0,
+      breakEven: 0,
+    });
+  });
+
   it('adds the current balance of every portfolio', () => {
     const portfolios = [
       makePortfolio({ id: 'portfolio-1', currentBalance: 120.5 }),

@@ -76,4 +76,36 @@ describe('Dexie v1 to v2 migration', () => {
     expect(await db.portfolios.count()).toBe(0);
     expect(await db.investments.count()).toBe(0);
   });
+
+  it('accepts writes to the new tables after the upgrade', async () => {
+    await db.open();
+    const now = new Date().toISOString();
+
+    await db.portfolios.add({
+      id: 'portfolio-1',
+      name: 'VOO',
+      type: 'etf',
+      broker: 'Hapi',
+      currentBalance: 0,
+      createdAt: now,
+      updatedAt: now,
+    });
+    await db.investments.add({
+      id: 'investment-1',
+      portfolioId: 'portfolio-1',
+      date: '2026-11-18',
+      depositTotal: 100,
+      bankCommission: 0,
+      brokerCommission: 0,
+      availableTotal: 100,
+      purchaseAmount: 100,
+      purchaseCommission: 0,
+      commissionFromResidual: false,
+      residualDelta: 0,
+      createdAt: now,
+    });
+
+    expect(await db.portfolios.count()).toBe(1);
+    expect(await db.investments.count()).toBe(1);
+  });
 });

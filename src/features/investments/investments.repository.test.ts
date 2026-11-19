@@ -100,4 +100,17 @@ describe('investments repository', () => {
     expect(await countInvestments(second.id)).toBe(1);
     expect(await countInvestments('missing')).toBe(0);
   });
+
+  it('lists only the investments of the requested portfolio', async () => {
+    const first = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    const second = await createPortfolio({ name: 'NVIDIA', type: 'stocks', broker: 'XTB' });
+
+    await createInvestment(investmentInput(first.id));
+    await createInvestment(investmentInput(second.id));
+
+    const rows = await listInvestments(first.id);
+
+    expect(rows).toHaveLength(1);
+    expect(rows[0].portfolioId).toBe(first.id);
+  });
 });
