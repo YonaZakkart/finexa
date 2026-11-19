@@ -1,5 +1,5 @@
 import { Briefcase, ChartPie, PlusCircle } from 'lucide-react';
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
@@ -16,6 +16,7 @@ import { formatCurrency } from '@/lib/format';
 import type { SupportedLanguage } from '@/lib/language';
 import { useAppStore } from '@/stores/app.store';
 import type { Investment, Portfolio } from '@/types';
+import { NewPortfolioModal } from './NewPortfolioModal';
 import { PortfolioCard } from './PortfolioCard';
 
 interface PortfolioView {
@@ -104,6 +105,7 @@ export function Investments() {
   const portfolios = useAppStore((state) => state.portfolios);
   const investments = useAppStore((state) => state.investments);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
+  const [newPortfolioOpen, setNewPortfolioOpen] = useState(false);
 
   const sortedPortfolios = useMemo(
     () => [...portfolios].sort((a, b) => a.name.localeCompare(b.name, language)),
@@ -120,12 +122,25 @@ export function Investments() {
 
   return (
     <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-5 p-6">
-      <header>
-        <p className="text-xs font-medium tracking-[0.2em] text-text-muted uppercase">
-          {tCommon('appName')}
-        </p>
-        <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t('title')}</h1>
-        <p className="mt-1 text-sm text-text-muted">{t('subtitle')}</p>
+      <header className="flex flex-col gap-3 sm:flex-row sm:items-start sm:justify-between">
+        <div>
+          <p className="text-xs font-medium tracking-[0.2em] text-text-muted uppercase">
+            {tCommon('appName')}
+          </p>
+          <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t('title')}</h1>
+          <p className="mt-1 text-sm text-text-muted">{t('subtitle')}</p>
+        </div>
+        {portfolios.length > 0 ? (
+          <Button
+            variant="secondary"
+            size="sm"
+            className="self-start sm:shrink-0"
+            onClick={() => setNewPortfolioOpen(true)}
+          >
+            <PlusCircle aria-hidden="true" className="size-4" />
+            {t('newPortfolio')}
+          </Button>
+        ) : null}
       </header>
 
       {portfolios.length === 0 ? (
@@ -134,13 +149,10 @@ export function Investments() {
           title={t('empty.title')}
           description={t('empty.text')}
           action={
-            <div className="flex flex-col items-center gap-2">
-              <Button disabled aria-label={`${t('newPortfolio')} (${tCommon('comingSoon')})`}>
-                <PlusCircle aria-hidden="true" className="size-4" />
-                {t('newPortfolio')}
-              </Button>
-              <span className="text-xs text-text-muted">{tCommon('comingSoon')}</span>
-            </div>
+            <Button onClick={() => setNewPortfolioOpen(true)}>
+              <PlusCircle aria-hidden="true" className="size-4" />
+              {t('newPortfolio')}
+            </Button>
           }
         />
       ) : (
@@ -167,6 +179,8 @@ export function Investments() {
           </section>
         </>
       )}
+
+      {newPortfolioOpen ? <NewPortfolioModal onClose={() => setNewPortfolioOpen(false)} /> : null}
     </main>
   );
 }
