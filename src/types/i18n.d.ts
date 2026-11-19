@@ -11,6 +11,7 @@ declare module 'i18next' {
       debts: Record<string, string>;
       summary: Record<string, string>;
       onboarding: Record<string, string>;
+      investments: Record<string, string>;
       errors: Record<string, string>;
     };
   }

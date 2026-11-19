@@ -4,12 +4,13 @@ import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AppShell } from './AppShell';
 
-function renderShell() {
+function renderShell(initialEntries: string[] = ['/']) {
   return render(
-    <MemoryRouter initialEntries={['/']}>
+    <MemoryRouter initialEntries={initialEntries}>
       <Routes>
         <Route element={<AppShell />}>
           <Route index element={<div>Content</div>} />
+          <Route path="investments" element={<div>Investments content</div>} />
         </Route>
       </Routes>
     </MemoryRouter>
@@ -89,11 +90,29 @@ describe('AppShell', () => {
     expect(screen.getByRole('contentinfo')).toHaveTextContent(__APP_VERSION__);
   });
 
-  it('marks placeholder modules as coming soon', () => {
+  it('links investments and keeps business as coming soon', () => {
     renderShell();
 
-    const investments = screen.getByRole('button', { name: 'Inversiones (Próximamente)' });
+    expect(screen.getByRole('link', { name: 'Inversiones' })).toHaveAttribute(
+      'href',
+      '/investments'
+    );
+    expect(screen.getByRole('button', { name: 'Negocio (Próximamente)' })).toBeDisabled();
+  });
 
-    expect(investments).toBeDisabled();
+  it('activates investments, shows its views and hides the expense bottom navigation', () => {
+    renderShell(['/investments']);
+
+    expect(screen.getByRole('link', { name: 'Inversiones' })).toHaveAttribute(
+      'aria-current',
+      'page'
+    );
+    expect(screen.getByRole('link', { name: 'Control de gastos' })).not.toHaveAttribute(
+      'aria-current'
+    );
+    expect(screen.getByRole('link', { name: 'Portafolios' })).toBeInTheDocument();
+    expect(
+      screen.queryByRole('navigation', { name: 'Navegación inferior' })
+    ).not.toBeInTheDocument();
   });
 });
