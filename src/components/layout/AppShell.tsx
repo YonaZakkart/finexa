@@ -1,4 +1,5 @@
 import {
+  Briefcase,
   ChartPie,
   ChevronLeft,
   LayoutDashboard,
@@ -10,7 +11,7 @@ import {
 } from 'lucide-react';
 import { type RefObject, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { NavLink, Outlet, useLocation } from 'react-router-dom';
+import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/cn';
 import { Brand } from './Brand';
 import { LanguageSwitcher } from './LanguageSwitcher';
@@ -26,11 +27,12 @@ interface MainNavItem {
   exact?: boolean;
 }
 
+type ModuleId = 'expenses' | 'investments' | 'business';
+
 interface ModuleNavItem {
-  id: string;
+  id: ModuleId;
   label: string;
   path?: string;
-  active?: boolean;
   placeholder?: boolean;
 }
 
@@ -41,11 +43,31 @@ const MAIN_NAV: readonly MainNavItem[] = [
   { path: '/summary', label: 'dashboard:summary', icon: ChartPie },
 ] as const;
 
+const INVESTMENT_NAV: readonly MainNavItem[] = [
+  { path: '/investments', label: 'investments:portfolios', icon: Briefcase },
+] as const;
+
 const MODULE_NAV: readonly ModuleNavItem[] = [
-  { id: 'expenses', label: 'dashboard:moduleExpenses', path: '/', active: true },
-  { id: 'investments', label: 'dashboard:moduleInvestments', placeholder: true },
+  { id: 'expenses', label: 'dashboard:moduleExpenses', path: '/' },
+  { id: 'investments', label: 'dashboard:moduleInvestments', path: '/investments' },
   { id: 'business', label: 'dashboard:moduleBusiness', placeholder: true },
 ] as const;
+
+function isInvestmentsPath(pathname: string): boolean {
+  return pathname === '/investments' || pathname.startsWith('/investments/');
+}
+
+function isModuleActive(id: ModuleId, pathname: string): boolean {
+  if (id === 'investments') {
+    return isInvestmentsPath(pathname);
+  }
+
+  if (id === 'expenses') {
+    return !isInvestmentsPath(pathname);
+  }
+
+  return false;
+}
 
 function readSidebarPreference(): boolean {
   try {
@@ -74,6 +96,7 @@ function TopNav({
 }) {
   const { t } = useTranslation('dashboard');
   const { t: tCommon } = useTranslation('common');
+  const location = useLocation();
 
   return (
     <header className="z-40 glass-card glass-card--strong border-b border-border px-3 py-2 sm:px-6">
@@ -93,19 +116,25 @@ function TopNav({
         </button>
         <div className="flex min-w-0 items-center gap-1">
           {MODULE_NAV.map((module) => {
+            const isActive = isModuleActive(module.id, location.pathname);
             const className = cn(
               'shrink-0 min-h-11 items-center justify-center whitespace-nowrap rounded-md px-2 py-1.5 text-xs font-medium transition-colors sm:px-3 sm:text-sm',
-              module.active
+              isActive
                 ? 'inline-flex text-accent bg-surface'
                 : 'hidden text-text-muted hover:text-text hover:bg-surface lg:inline-flex',
               module.placeholder && 'opacity-50 cursor-not-allowed'
             );
 
-            if (module.active && module.path) {
+            if (module.path && !module.placeholder) {
               return (
-                <NavLink key={module.id} to={module.path} aria-current="page" className={className}>
+                <Link
+                  key={module.id}
+                  to={module.path}
+                  aria-current={isActive ? 'page' : undefined}
+                  className={className}
+                >
                   {t(module.label)}
-                </NavLink>
+                </Link>
               );
             }
 
@@ -147,6 +176,8 @@ function SidebarContent({
   const { t } = useTranslation('dashboard');
   const { t: tCommon } = useTranslation('common');
   const location = useLocation();
+  const isInvestments = isInvestmentsPath(location.pathname);
+  const navItems = isInvestments ? INVESTMENT_NAV : MAIN_NAV;
 
   return (
     <>
@@ -198,25 +229,26 @@ function SidebarContent({
           </p>
           <div className="space-y-1">
             {MODULE_NAV.map((module) => {
+              const isActive = isModuleActive(module.id, location.pathname);
               const className = cn(
                 'flex min-h-11 w-full items-center rounded-md px-3 py-2.5 text-sm font-medium transition-colors',
-                module.active
+                isActive
                   ? 'text-accent bg-surface'
                   : 'text-text-muted hover:text-text hover:bg-surface',
                 module.placeholder && 'opacity-50 cursor-not-allowed'
               );
 
-              if (module.active && module.path) {
+              if (module.path && !module.placeholder) {
                 return (
-                  <NavLink
+                  <Link
                     key={module.id}
                     to={module.path}
                     onClick={onNavigate}
-                    aria-current="page"
+                    aria-current={isActive ? 'page' : undefined}
                     className={className}
                   >
                     {t(module.label)}
-                  </NavLink>
+                  </Link>
                 );
               }
 
@@ -238,7 +270,7 @@ function SidebarContent({
         </div>
       ) : null}
       <nav className="flex-1 overflow-y-auto p-3" aria-label={tCommon('viewsNavigation')}>
-        {MAIN_NAV.map((item) => {
+        {navItems.map((item) => {
           const isActive = item.exact
             ? location.pathname === item.path
             : location.pathname.startsWith(item.path);
@@ -379,6 +411,8 @@ function Footer() {
 
 export function AppShell() {
   const { t } = useTranslation('common');
+  const location = useLocation();
+  const isInvestments = isInvestmentsPath(location.pathname);
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [sidebarCollapsed, setSidebarCollapsed] = useState(readSidebarPreference);
   const menuButtonRef = useRef<HTMLButtonElement>(null);
@@ -434,7 +468,10 @@ export function AppShell() {
         <div
           id="main-content"
           tabIndex={-1}
-          className="flex min-h-0 flex-1 flex-col overflow-y-auto pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0"
+          className={cn(
+            'flex min-h-0 flex-1 flex-col overflow-y-auto',
+            isInvestments ? 'pb-0' : 'pb-[calc(4rem+env(safe-area-inset-bottom))] lg:pb-0'
+          )}
         >
           <div className="flex-1">
             <Outlet />
@@ -442,7 +479,7 @@ export function AppShell() {
           <Footer />
         </div>
       </div>
-      <BottomNav />
+      {isInvestments ? null : <BottomNav />}
       <MobileSidebar
         open={sidebarOpen}
         onClose={() => {
