@@ -1,4 +1,5 @@
 import { render, screen, within } from '@testing-library/react';
+import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createDefaultSettings } from '@/features/settings/settings.service';
@@ -71,14 +72,33 @@ afterEach(() => {
 });
 
 describe('Investments', () => {
-  it('shows an empty state with the upcoming new portfolio action', () => {
+  it('opens the new portfolio modal from the empty state', async () => {
+    const user = userEvent.setup();
     seed([], []);
     renderPage();
 
     expect(screen.getByRole('heading', { name: 'Inversiones' })).toBeInTheDocument();
     expect(screen.getByText('Aún no hay portafolios')).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: /Nuevo portafolio/ })).toBeDisabled();
     expect(screen.queryByText('Totales')).not.toBeInTheDocument();
+
+    const button = screen.getByRole('button', { name: 'Nuevo portafolio' });
+    expect(button).toBeEnabled();
+    await user.click(button);
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('dialog')).getByRole('heading', { name: 'Nuevo portafolio' })
+    ).toBeInTheDocument();
+  });
+
+  it('opens the new portfolio modal from the panel header', async () => {
+    const user = userEvent.setup();
+    seed([portfolio({ id: 'p1', name: 'VOO', currentBalance: 100 })], []);
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Nuevo portafolio' }));
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
 
   it('sums the global totals and renders each portfolio sorted by name', () => {
