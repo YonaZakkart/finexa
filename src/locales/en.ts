@@ -300,6 +300,15 @@ export const en = {
       modeAvailable: 'Commission from available',
       modeResidual: 'Commission from residual',
       date: 'Date',
+      updateBalance: 'Update balance',
+      balanceRequiresInvestment: 'Record at least one investment to update the balance.',
+    },
+    balance: {
+      title: 'Update current balance',
+      description: 'Adjust the balance manually to the value shown by your broker.',
+      value: 'Current balance',
+      hint: 'Saved as a snapshot; it does not create movements or affect your personal balance.',
+      saveError: 'We could not save the balance. Please try again.',
     },
   },
   onboarding: {

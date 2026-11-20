@@ -1,5 +1,5 @@
-import { ArrowLeft, Briefcase, PlusCircle } from 'lucide-react';
-import { useMemo } from 'react';
+import { ArrowLeft, Briefcase, PlusCircle, Wallet } from 'lucide-react';
+import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
@@ -10,6 +10,7 @@ import { useAppStore } from '@/stores/app.store';
 import { selectPortfolioInvestments } from '@/stores/selectors';
 import { InvestmentList } from './InvestmentList';
 import { PortfolioSummary } from './PortfolioSummary';
+import { UpdateBalanceModal } from './UpdateBalanceModal';
 
 export function PortfolioDetail() {
   const { t } = useTranslation('investments');
@@ -19,6 +20,7 @@ export function PortfolioDetail() {
   const portfolios = useAppStore((state) => state.portfolios);
   const investments = useAppStore((state) => state.investments);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
+  const [balanceOpen, setBalanceOpen] = useState(false);
 
   const portfolio = portfolios.find((item) => item.id === portfolioId);
   const portfolioInvestments = useMemo(
@@ -91,19 +93,39 @@ export function PortfolioDetail() {
         language={language}
       />
 
-      <div className="flex flex-col gap-2">
-        <Button
-          disabled
-          aria-label={`${t('detail.addInvestment')} (${tCommon('comingSoon')})`}
-          className="w-full sm:w-auto"
-        >
-          <PlusCircle aria-hidden="true" className="size-4" />
-          {t('detail.addInvestment')}
-        </Button>
-        <span className="text-xs text-text-muted">{tCommon('comingSoon')}</span>
+      <div className="flex flex-col gap-3 sm:flex-row">
+        <div className="flex flex-col gap-1">
+          <Button
+            variant="secondary"
+            onClick={() => setBalanceOpen(true)}
+            disabled={portfolioInvestments.length === 0}
+            className="w-full sm:w-auto"
+          >
+            <Wallet aria-hidden="true" className="size-4" />
+            {t('detail.updateBalance')}
+          </Button>
+          {portfolioInvestments.length === 0 ? (
+            <span className="text-xs text-text-muted">{t('detail.balanceRequiresInvestment')}</span>
+          ) : null}
+        </div>
+        <div className="flex flex-col gap-1">
+          <Button
+            disabled
+            aria-label={`${t('detail.addInvestment')} (${tCommon('comingSoon')})`}
+            className="w-full sm:w-auto"
+          >
+            <PlusCircle aria-hidden="true" className="size-4" />
+            {t('detail.addInvestment')}
+          </Button>
+          <span className="text-xs text-text-muted">{tCommon('comingSoon')}</span>
+        </div>
       </div>
 
       <InvestmentList investments={portfolioInvestments} language={language} />
+
+      {balanceOpen ? (
+        <UpdateBalanceModal portfolio={portfolio} onClose={() => setBalanceOpen(false)} />
+      ) : null}
     </main>
   );
 }
