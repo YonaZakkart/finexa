@@ -48,12 +48,13 @@ function seed(portfolios: Portfolio[], investments: Investment[]) {
   });
 }
 
-function renderDetail(path = '/investments/p1') {
+function renderDetail(path = '/investments/p1', state?: { investmentCreated?: boolean }) {
   return render(
-    <MemoryRouter initialEntries={[path]}>
+    <MemoryRouter initialEntries={[state ? { pathname: path, state } : path]}>
       <Routes>
         <Route path="/investments" element={<div>Portfolios page</div>} />
         <Route path="/investments/:portfolioId" element={<PortfolioDetail />} />
+        <Route path="/investments/:portfolioId/new" element={<div>New investment page</div>} />
       </Routes>
     </MemoryRouter>
   );
@@ -110,8 +111,8 @@ describe('PortfolioDetail', () => {
     expect(within(list).getByText(/^50,00\s*US\$$/)).toBeInTheDocument();
 
     expect(screen.getByRole('button', { name: 'Actualizar saldo' })).toBeEnabled();
-    expect(screen.getByRole('button', { name: /Agregar inversión/ })).toBeDisabled();
-    expect(screen.getByText('Próximamente')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Agregar inversión' })).toBeEnabled();
+    expect(screen.queryByText('Próximamente')).not.toBeInTheDocument();
   });
 
   it('shows the balance hint when it has not been registered', () => {
@@ -130,6 +131,7 @@ describe('PortfolioDetail', () => {
 
     expect(screen.getByText('Sin datos')).toBeInTheDocument();
     expect(screen.getByRole('button', { name: 'Actualizar saldo' })).toBeDisabled();
+    expect(screen.getByRole('button', { name: 'Agregar inversión' })).toBeEnabled();
     expect(
       screen.getByText('Registra al menos una inversión para actualizar el saldo.')
     ).toBeInTheDocument();
@@ -166,6 +168,23 @@ describe('PortfolioDetail', () => {
     expect(
       within(screen.getByRole('dialog')).getByRole('heading', { name: 'Actualizar saldo actual' })
     ).toBeInTheDocument();
+  });
+
+  it('navigates to the new investment form', async () => {
+    const user = userEvent.setup();
+    seed([portfolio()], []);
+    renderDetail();
+
+    await user.click(screen.getByRole('button', { name: 'Agregar inversión' }));
+
+    expect(screen.getByText('New investment page')).toBeInTheDocument();
+  });
+
+  it('shows the created confirmation when arriving from the form', () => {
+    seed([portfolio()], []);
+    renderDetail('/investments/p1', { investmentCreated: true });
+
+    expect(screen.getByRole('status')).toHaveTextContent('Inversión registrada.');
   });
 
   it('navigates back to the list from the header', async () => {
