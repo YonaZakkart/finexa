@@ -109,6 +109,7 @@ describe('PortfolioDetail', () => {
     expect(within(list).getByText(/^100,00\s*US\$$/)).toBeInTheDocument();
     expect(within(list).getByText(/^50,00\s*US\$$/)).toBeInTheDocument();
 
+    expect(screen.getByRole('button', { name: 'Actualizar saldo' })).toBeEnabled();
     expect(screen.getByRole('button', { name: /Agregar inversión/ })).toBeDisabled();
     expect(screen.getByText('Próximamente')).toBeInTheDocument();
   });
@@ -128,6 +129,10 @@ describe('PortfolioDetail', () => {
     renderDetail();
 
     expect(screen.getByText('Sin datos')).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: 'Actualizar saldo' })).toBeDisabled();
+    expect(
+      screen.getByText('Registra al menos una inversión para actualizar el saldo.')
+    ).toBeInTheDocument();
     expect(screen.getByText('Aún no hay inversiones')).toBeInTheDocument();
     expect(
       screen.getByText('Registra tu primera inversión para ver el detalle.')
@@ -148,6 +153,19 @@ describe('PortfolioDetail', () => {
     await user.click(screen.getByRole('button', { name: 'Volver a portafolios' }));
 
     expect(screen.getByText('Portfolios page')).toBeInTheDocument();
+  });
+
+  it('opens the update balance modal', async () => {
+    const user = userEvent.setup();
+    seed([portfolio({ currentBalance: 100 })], [investment({ id: 'i1' })]);
+    renderDetail();
+
+    await user.click(screen.getByRole('button', { name: 'Actualizar saldo' }));
+
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(
+      within(screen.getByRole('dialog')).getByRole('heading', { name: 'Actualizar saldo actual' })
+    ).toBeInTheDocument();
   });
 
   it('navigates back to the list from the header', async () => {

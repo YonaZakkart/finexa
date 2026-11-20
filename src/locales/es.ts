@@ -301,6 +301,15 @@ export const es = {
       modeAvailable: 'Comisión desde el disponible',
       modeResidual: 'Comisión desde el residual',
       date: 'Fecha',
+      updateBalance: 'Actualizar saldo',
+      balanceRequiresInvestment: 'Registra al menos una inversión para actualizar el saldo.',
+    },
+    balance: {
+      title: 'Actualizar saldo actual',
+      description: 'Ajusta el saldo manualmente según el valor que muestra tu broker.',
+      value: 'Saldo actual',
+      hint: 'Se guarda como un snapshot; no crea movimientos ni afecta el balance personal.',
+      saveError: 'No pudimos guardar el saldo. Inténtalo de nuevo.',
     },
   },
   onboarding: {
