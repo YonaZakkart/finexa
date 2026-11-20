@@ -47,7 +47,7 @@ export function PortfolioDetail() {
           >
             <ArrowLeft aria-hidden="true" className="size-5" />
           </button>
-          <h1 className="text-2xl font-semibold tracking-tight">{t('detail.notFound')}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">{t('title')}</h1>
         </header>
         <EmptyState
           icon={<Briefcase aria-hidden="true" className="size-8" />}

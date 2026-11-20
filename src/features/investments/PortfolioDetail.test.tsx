@@ -147,7 +147,8 @@ describe('PortfolioDetail', () => {
     seed([], []);
     renderDetail('/investments/missing');
 
-    expect(screen.getByRole('heading', { name: 'Portafolio no encontrado' })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: 'Inversiones' })).toBeInTheDocument();
+    expect(screen.getByText('Portafolio no encontrado')).toBeInTheDocument();
     expect(
       screen.getByText('El portafolio no existe o ya no está disponible.')
     ).toBeInTheDocument();

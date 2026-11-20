@@ -23,7 +23,9 @@ export function InvestmentList({ investments, language }: InvestmentListProps) {
           </h2>
           <p className="mt-1 text-xs text-text-muted">{t('detail.investmentsHint')}</p>
         </div>
-        <span className="text-xs font-medium text-text-muted">{investments.length}</span>
+        <span aria-hidden="true" className="text-xs font-medium text-text-muted">
+          {investments.length}
+        </span>
       </div>
 
       {investments.length === 0 ? (

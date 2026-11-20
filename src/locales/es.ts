@@ -310,6 +310,7 @@ export const es = {
       description: 'Ajusta el saldo manualmente según el valor que muestra tu broker.',
       value: 'Saldo actual',
       hint: 'Se guarda como un snapshot; no crea movimientos ni afecta el balance personal.',
+      required: 'Introduce un saldo válido.',
       saveError: 'No pudimos guardar el saldo. Inténtalo de nuevo.',
     },
     newInvestment: {
@@ -320,7 +321,8 @@ export const es = {
       brokerCommission: 'Comisión del broker',
       purchaseSection: 'Compra dentro del broker',
       availableTotal: 'Total disponible',
-      availableHint: 'Por defecto: depósito total − comisión del banco − comisión del broker.',
+      availableHint:
+        'Por defecto: depósito total − comisión del banco − comisión del broker. No incluyas el residual acumulado.',
       purchaseAmount: 'Compra',
       purchaseCommission: 'Comisión por compra',
       residualSection: 'Residual',

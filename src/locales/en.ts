@@ -309,6 +309,7 @@ export const en = {
       description: 'Adjust the balance manually to the value shown by your broker.',
       value: 'Current balance',
       hint: 'Saved as a snapshot; it does not create movements or affect your personal balance.',
+      required: 'Enter a valid balance.',
       saveError: 'We could not save the balance. Please try again.',
     },
     newInvestment: {
@@ -319,7 +320,8 @@ export const en = {
       brokerCommission: 'Broker commission',
       purchaseSection: 'Purchase inside broker',
       availableTotal: 'Available total',
-      availableHint: 'Default: total deposit − bank commission − broker commission.',
+      availableHint:
+        'Default: total deposit − bank commission − broker commission. Do not include the accumulated residual.',
       purchaseAmount: 'Purchase',
       purchaseCommission: 'Purchase commission',
       residualSection: 'Residual',

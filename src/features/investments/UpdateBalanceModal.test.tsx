@@ -62,7 +62,7 @@ describe('UpdateBalanceModal', () => {
     await user.clear(screen.getByLabelText('Saldo actual'));
     await user.click(screen.getByRole('button', { name: 'Guardar' }));
 
-    expect(screen.getByRole('alert')).toHaveTextContent('El saldo no puede ser negativo');
+    expect(screen.getByRole('alert')).toHaveTextContent('Introduce un saldo válido');
     expect(updateBalanceMock).not.toHaveBeenCalled();
   });
 

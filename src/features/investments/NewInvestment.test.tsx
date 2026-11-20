@@ -138,6 +138,10 @@ describe('NewInvestment', () => {
       screen.getByLabelText('¿La comisión de compra se pagó con el residual disponible?'),
       'yes'
     );
+
+    expect(screen.getByText('Desglose del residual')).toBeInTheDocument();
+    expect(screen.getByText('Sobrante de la compra')).toBeInTheDocument();
+
     await user.click(screen.getByRole('button', { name: 'Guardar inversión' }));
 
     await waitFor(() =>
@@ -163,6 +167,32 @@ describe('NewInvestment', () => {
     await user.click(screen.getByRole('button', { name: 'Guardar inversión' }));
 
     expect(registerInvestmentMock).not.toHaveBeenCalled();
+  });
+
+  it('allows overriding the residual and resets it', async () => {
+    const user = userEvent.setup();
+    seed([portfolio], []);
+    renderForm();
+
+    await user.type(screen.getByLabelText('Depósito total'), '100');
+    await user.type(screen.getByLabelText('Compra'), '99');
+    await user.type(screen.getByLabelText('Comisión por compra'), '0.3');
+
+    const residual = screen.getByLabelText('Residual de esta transacción');
+    await user.clear(residual);
+    await user.type(residual, '0.25');
+
+    expect(screen.getByText(/Diferencia con el cálculo/)).toBeInTheDocument();
+
+    await user.click(screen.getByRole('button', { name: 'Restablecer' }));
+    expect(residual).toHaveValue(0.7);
+
+    await user.click(screen.getByRole('button', { name: 'Guardar inversión' }));
+    await waitFor(() =>
+      expect(registerInvestmentMock).toHaveBeenCalledWith(
+        expect.objectContaining({ residualDelta: 0.7 })
+      )
+    );
   });
 
   it('shows the current portfolio residual', () => {
