@@ -3,18 +3,12 @@ import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
 import { Card } from '@/components/ui/Card';
 import type { PortfolioStatus } from '@/features/investments/status';
+import { PORTFOLIO_STATUS_TONE } from '@/features/investments/status-tone';
 import type { PortfolioTotals } from '@/features/investments/totals';
 import { cn } from '@/lib/cn';
 import { formatCurrency } from '@/lib/format';
 import type { SupportedLanguage } from '@/lib/language';
 import type { Portfolio } from '@/types';
-
-const STATUS_TONE: Record<PortfolioStatus, string> = {
-  neutral: 'text-text-muted',
-  red: 'text-negative',
-  yellow: 'text-warning',
-  green: 'text-positive',
-};
 
 export interface PortfolioCardProps {
   portfolio: Portfolio;
@@ -48,12 +42,12 @@ export function PortfolioCard({ portfolio, totals, status, language }: Portfolio
           <p
             className={cn(
               'mt-1 text-2xl font-semibold tracking-tight tabular-nums',
-              STATUS_TONE[status]
+              PORTFOLIO_STATUS_TONE[status]
             )}
           >
             {formatCurrency(portfolio.currentBalance, language)}
           </p>
-          <p className={cn('mt-1 text-xs font-medium', STATUS_TONE[status])}>
+          <p className={cn('mt-1 text-xs font-medium', PORTFOLIO_STATUS_TONE[status])}>
             {t(`status.${status}`)}
           </p>
         </div>
