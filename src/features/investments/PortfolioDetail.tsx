@@ -1,7 +1,7 @@
 import { ArrowLeft, Briefcase, PlusCircle, Wallet } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
-import { useNavigate, useParams } from 'react-router-dom';
+import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { getPortfolioStatus } from '@/features/investments/status';
@@ -16,11 +16,14 @@ export function PortfolioDetail() {
   const { t } = useTranslation('investments');
   const { t: tCommon } = useTranslation('common');
   const navigate = useNavigate();
+  const location = useLocation();
   const { portfolioId } = useParams<{ portfolioId: string }>();
   const portfolios = useAppStore((state) => state.portfolios);
   const investments = useAppStore((state) => state.investments);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
   const [balanceOpen, setBalanceOpen] = useState(false);
+  const investmentCreated = (location.state as { investmentCreated?: boolean } | null)
+    ?.investmentCreated;
 
   const portfolio = portfolios.find((item) => item.id === portfolioId);
   const portfolioInvestments = useMemo(
@@ -85,6 +88,12 @@ export function PortfolioDetail() {
         </div>
       </header>
 
+      {investmentCreated ? (
+        <p role="status" className="text-sm font-medium text-positive">
+          {t('detail.investmentCreated')}
+        </p>
+      ) : null}
+
       <PortfolioSummary
         portfolio={portfolio}
         totals={totals}
@@ -108,17 +117,13 @@ export function PortfolioDetail() {
             <span className="text-xs text-text-muted">{t('detail.balanceRequiresInvestment')}</span>
           ) : null}
         </div>
-        <div className="flex flex-col gap-1">
-          <Button
-            disabled
-            aria-label={`${t('detail.addInvestment')} (${tCommon('comingSoon')})`}
-            className="w-full sm:w-auto"
-          >
-            <PlusCircle aria-hidden="true" className="size-4" />
-            {t('detail.addInvestment')}
-          </Button>
-          <span className="text-xs text-text-muted">{tCommon('comingSoon')}</span>
-        </div>
+        <Button
+          onClick={() => navigate(`/investments/${portfolio.id}/new`)}
+          className="w-full sm:w-auto"
+        >
+          <PlusCircle aria-hidden="true" className="size-4" />
+          {t('detail.addInvestment')}
+        </Button>
       </div>
 
       <InvestmentList investments={portfolioInvestments} language={language} />
