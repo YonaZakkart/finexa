@@ -1,18 +1,12 @@
-import { render, screen, waitFor, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { TransactionError } from '@/features/balance/errors';
-import { record } from '@/features/balance/transactions.service';
+import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createDefaultSettings } from '@/features/settings/settings.service';
-import { getLocalDateString } from '@/lib/date';
 import { useAppStore } from '@/stores/app.store';
 import type { Debt, Transaction } from '@/types';
 import { Dashboard } from './Dashboard';
 
-vi.mock('@/features/balance/transactions.service', () => ({ record: vi.fn() }));
-
-const recordMock = vi.mocked(record);
 let sequence = 0;
 
 function transaction(overrides: Partial<Transaction> = {}): Transaction {
@@ -57,6 +51,7 @@ function renderDashboard() {
       <Routes>
         <Route path="/" element={<Dashboard />} />
         <Route path="/debts" element={<div>Debts page</div>} />
+        <Route path="/money" element={<div>Money page</div>} />
       </Routes>
     </MemoryRouter>
   );
@@ -69,8 +64,6 @@ function cardFor(title: string): HTMLElement {
 
 beforeEach(() => {
   useAppStore.getState().reset();
-  recordMock.mockReset();
-  recordMock.mockResolvedValue(transaction({ id: 'saved' }));
 });
 
 afterEach(() => {
@@ -118,88 +111,14 @@ describe('Dashboard', () => {
     expect(within(cardFor('Deuda')).getByText(/0,00\s*US\$/)).toHaveClass('text-text-muted');
   });
 
-  it('opens the money modal from the quick action', async () => {
+  it('navigates to the money page from the quick action', async () => {
     const user = userEvent.setup();
     seed([], []);
     renderDashboard();
 
-    await user.click(screen.getByRole('button', { name: 'Añadir dinero' }));
+    await user.click(screen.getByRole('button', { name: 'Gestionar dinero' }));
 
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    expect(screen.getByRole('heading', { name: 'Añadir dinero' })).toBeInTheDocument();
-    expect(screen.getByLabelText('Tipo')).toHaveValue('income');
-  });
-
-  it('records an income and closes the modal', async () => {
-    const user = userEvent.setup();
-    seed([], []);
-    renderDashboard();
-
-    await user.click(screen.getByRole('button', { name: 'Añadir dinero' }));
-    await user.type(screen.getByLabelText('Monto'), '50');
-    await user.type(screen.getByLabelText('Origen o nota'), 'Salario');
-    await user.click(screen.getByRole('button', { name: 'Guardar' }));
-
-    await waitFor(() =>
-      expect(recordMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'income',
-          direction: 'credit',
-          amount: 50,
-          date: getLocalDateString(),
-          note: 'Salario',
-        })
-      )
-    );
-    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
-  });
-
-  it('records a debit balance adjustment', async () => {
-    const user = userEvent.setup();
-    seed([], []);
-    renderDashboard();
-
-    await user.click(screen.getByRole('button', { name: 'Añadir dinero' }));
-    await user.selectOptions(screen.getByLabelText('Tipo'), 'adjustment');
-    await user.selectOptions(screen.getByLabelText('Efecto en el balance'), 'debit');
-    await user.type(screen.getByLabelText('Monto'), '20');
-    await user.click(screen.getByRole('button', { name: 'Guardar' }));
-
-    await waitFor(() =>
-      expect(recordMock).toHaveBeenCalledWith(
-        expect.objectContaining({
-          type: 'adjustment',
-          direction: 'debit',
-          amount: 20,
-        })
-      )
-    );
-  });
-
-  it('rejects an empty amount without calling the service', async () => {
-    const user = userEvent.setup();
-    seed([], []);
-    renderDashboard();
-
-    await user.click(screen.getByRole('button', { name: 'Añadir dinero' }));
-    await user.click(screen.getByRole('button', { name: 'Guardar' }));
-
-    expect(screen.getByRole('alert')).toHaveTextContent('Introduce un monto mayor que cero');
-    expect(recordMock).not.toHaveBeenCalled();
-  });
-
-  it('shows a translated error when the service rejects', async () => {
-    const user = userEvent.setup();
-    recordMock.mockRejectedValueOnce(new TransactionError('invalidDate'));
-    seed([], []);
-    renderDashboard();
-
-    await user.click(screen.getByRole('button', { name: 'Añadir dinero' }));
-    await user.type(screen.getByLabelText('Monto'), '10');
-    await user.click(screen.getByRole('button', { name: 'Guardar' }));
-
-    expect(await screen.findByRole('alert')).toHaveTextContent('La fecha no es válida');
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    expect(screen.getByText('Money page')).toBeInTheDocument();
   });
 
   it('navigates to the debts view from the quick action', async () => {

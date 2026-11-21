@@ -43,11 +43,19 @@ export const es = {
     moduleBusiness: 'Negocio',
     quickActions: 'Acciones rápidas',
     addMoney: 'Añadir dinero',
+    manageMoney: 'Gestionar dinero',
     manageDebts: 'Gestionar deudas',
     negativeBalance: 'Balance negativo',
     empty: {
       title: 'Aún no hay movimientos',
       text: 'Añade dinero o registra un gasto para ver tu balance en movimiento.',
+    },
+    moneyPage: {
+      title: 'Gestión de dinero',
+      subtitle: 'Registra ingresos y ajustes del balance.',
+      add: 'Registrar movimiento',
+      movements: 'Movimientos de dinero',
+      empty: 'Aún no hay ingresos ni ajustes.',
     },
     money: {
       title: 'Añadir dinero',

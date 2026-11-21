@@ -43,11 +43,19 @@ export const en = {
     moduleBusiness: 'Business',
     quickActions: 'Quick actions',
     addMoney: 'Add money',
+    manageMoney: 'Manage money',
     manageDebts: 'Manage debts',
     negativeBalance: 'Negative balance',
     empty: {
       title: 'No movements yet',
       text: 'Add money or record an expense to see your balance in motion.',
+    },
+    moneyPage: {
+      title: 'Money management',
+      subtitle: 'Record income and balance adjustments.',
+      add: 'Record movement',
+      movements: 'Money movements',
+      empty: 'No income or adjustments yet.',
     },
     money: {
       title: 'Add money',
