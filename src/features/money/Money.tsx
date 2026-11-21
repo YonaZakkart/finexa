@@ -9,6 +9,23 @@ import { cn } from '@/lib/cn';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { useAppStore } from '@/stores/app.store';
 import { selectBalance } from '@/stores/selectors';
+import type { Transaction } from '@/types';
+
+const MOVEMENT_LABELS = {
+  income: 'money.income',
+  adjustment: 'money.adjustment',
+  investment: 'money.investment',
+} as const;
+
+type MoneyMovement = Transaction & { type: keyof typeof MOVEMENT_LABELS };
+
+function isMoneyMovement(transaction: Transaction): transaction is MoneyMovement {
+  return (
+    transaction.type === 'income' ||
+    transaction.type === 'adjustment' ||
+    transaction.type === 'investment'
+  );
+}
 
 export function Money() {
   const { t } = useTranslation('dashboard');
@@ -22,7 +39,7 @@ export function Money() {
   const movements = useMemo(
     () =>
       transactions
-        .filter((transaction) => transaction.type === 'income' || transaction.type === 'adjustment')
+        .filter(isMoneyMovement)
         .sort((a, b) => b.date.localeCompare(a.date) || b.createdAt.localeCompare(a.createdAt)),
     [transactions]
   );
@@ -77,20 +94,27 @@ export function Money() {
               <li key={transaction.id} className="rounded-md border border-border bg-surface p-3">
                 <div className="flex items-start justify-between gap-3">
                   <div className="min-w-0">
-                    <p className="text-sm font-medium">
-                      {t(transaction.type === 'income' ? 'money.income' : 'money.adjustment')}
-                    </p>
+                    <p className="text-sm font-medium">{t(MOVEMENT_LABELS[transaction.type])}</p>
                     <p className="mt-1 text-xs text-text-muted">
                       {formatDate(transaction.date, language)}
                     </p>
                     {transaction.note ? (
                       <p className="mt-1 truncate text-xs text-text-muted">{transaction.note}</p>
                     ) : null}
+                    {transaction.affectsBalance === false ? (
+                      <p className="mt-1 text-xs font-medium text-warning">
+                        {t('moneyPage.noBalanceImpact')}
+                      </p>
+                    ) : null}
                   </div>
                   <p
                     className={cn(
                       'shrink-0 text-sm font-semibold tabular-nums',
-                      transaction.direction === 'credit' ? 'text-positive' : 'text-negative'
+                      transaction.affectsBalance === false
+                        ? 'text-text-muted'
+                        : transaction.direction === 'credit'
+                          ? 'text-positive'
+                          : 'text-negative'
                     )}
                   >
                     {formatCurrency(transaction.amount, language)}

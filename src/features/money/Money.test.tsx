@@ -96,6 +96,62 @@ describe('Money', () => {
     seed([]);
     renderPage();
 
-    expect(screen.getByText('Aún no hay ingresos ni ajustes.')).toBeInTheDocument();
+    expect(screen.getByText('Aún no hay ingresos, ajustes ni inversiones.')).toBeInTheDocument();
+  });
+
+  it('lists investment movements and flags those that do not affect the balance', () => {
+    seed([
+      {
+        id: 't4',
+        type: 'investment',
+        direction: 'debit',
+        amount: 80,
+        date: '2026-11-15',
+        createdAt: '2026-11-15T10:00:00.000Z',
+        affectsBalance: false,
+      },
+    ]);
+    renderPage();
+
+    expect(screen.getByText('Inversión')).toBeInTheDocument();
+    expect(screen.getByText('No afecta el balance')).toBeInTheDocument();
+    expect(screen.getByText(/80,00\s*US\$/)).toBeInTheDocument();
+  });
+
+  it('records an investment movement with its balance impact', async () => {
+    const user = userEvent.setup();
+    seed([]);
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Registrar movimiento' }));
+    await user.selectOptions(screen.getByLabelText('Tipo'), 'investment');
+    await user.selectOptions(screen.getByLabelText('¿Afecta el balance actual?'), 'no');
+    await user.type(screen.getByLabelText('Monto'), '75');
+    await user.click(screen.getByRole('button', { name: 'Guardar' }));
+
+    await waitFor(() =>
+      expect(recordMock).toHaveBeenCalledWith(
+        expect.objectContaining({
+          type: 'investment',
+          direction: 'debit',
+          amount: 75,
+          affectsBalance: false,
+        })
+      )
+    );
+  });
+
+  it('asks for the balance impact when the type is investment', async () => {
+    const user = userEvent.setup();
+    seed([]);
+    renderPage();
+
+    await user.click(screen.getByRole('button', { name: 'Registrar movimiento' }));
+    expect(screen.queryByLabelText('¿Afecta el balance actual?')).not.toBeInTheDocument();
+
+    await user.selectOptions(screen.getByLabelText('Tipo'), 'investment');
+
+    expect(screen.getByLabelText('¿Afecta el balance actual?')).toBeInTheDocument();
+    expect(screen.getByRole('option', { name: 'Inversión' })).toBeInTheDocument();
   });
 });
