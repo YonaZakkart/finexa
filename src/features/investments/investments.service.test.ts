@@ -2,7 +2,12 @@ import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '@/lib/db';
 import { useAppStore } from '@/stores/app.store';
-import { createPortfolio, registerInvestment, updateBalance } from './investments.service';
+import {
+  createPortfolio,
+  editInvestment,
+  registerInvestment,
+  updateBalance,
+} from './investments.service';
 import { getPortfolioStatus } from './status';
 import { calculatePortfolioTotals } from './totals';
 import type { InvestmentInput } from './validation';
@@ -120,7 +125,7 @@ describe('updateBalance', () => {
     expect(updated?.currentBalance).toBe(150.01);
     expect(updated?.balanceUpdatedAt).toBeTruthy();
     expect(updated?.updatedAt).toBeTruthy();
-    expect(await db.transactions.count()).toBe(0);
+    expect(await db.transactions.count()).toBe(1);
     expect(useAppStore.getState().portfolios[0].currentBalance).toBe(150.01);
   });
 });
@@ -150,7 +155,15 @@ describe('registerInvestment', () => {
     expect(investment.depositTotal).toBe(100);
     expect(investment.bankCommission).toBe(0);
     expect(await db.investments.count()).toBe(1);
-    expect(await db.transactions.count()).toBe(0);
+    expect(await db.transactions.count()).toBe(1);
+    expect(investment.transactionId).toBeTruthy();
+    const outflow = await db.transactions.get(investment.transactionId ?? '');
+    expect(outflow).toMatchObject({
+      type: 'investment',
+      direction: 'debit',
+      amount: 100,
+      relatedInvestmentId: investment.id,
+    });
     expect(useAppStore.getState().investments).toHaveLength(1);
   });
 
@@ -175,6 +188,7 @@ describe('registerInvestment', () => {
 
     expect(investment.residualDelta).toBe(-0.4);
     expect(await db.investments.count()).toBe(1);
+    expect(await db.transactions.count()).toBe(1);
   });
 
   it('supports the full portfolio flow and derived totals', async () => {
@@ -218,6 +232,46 @@ describe('registerInvestment', () => {
     });
     expect(getPortfolioStatus(160, totals, true)).toBe('green');
     expect(useAppStore.getState().portfolios[0].currentBalance).toBe(160);
+  });
+
+  it('edits an investment and updates the linked outflow only when requested', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    const created = await registerInvestment(
+      investmentInput(portfolio.id, {
+        depositTotal: 100,
+        availableTotal: 100,
+        purchaseAmount: 100,
+        purchaseCommission: 0,
+      })
+    );
+
+    await editInvestment(
+      created.id,
+      investmentInput(portfolio.id, {
+        depositTotal: 200,
+        availableTotal: 200,
+        purchaseAmount: 150,
+        purchaseCommission: 0,
+      }),
+      true
+    );
+
+    const updated = await db.investments.get(created.id);
+    expect(updated?.depositTotal).toBe(200);
+    expect((await db.transactions.get(created.transactionId ?? ''))?.amount).toBe(200);
+
+    await editInvestment(
+      created.id,
+      investmentInput(portfolio.id, {
+        depositTotal: 300,
+        availableTotal: 300,
+        purchaseAmount: 150,
+        purchaseCommission: 0,
+      }),
+      false
+    );
+
+    expect((await db.transactions.get(created.transactionId ?? ''))?.amount).toBe(200);
   });
 
   it('rejects a purchase above the available total without writing', async () => {

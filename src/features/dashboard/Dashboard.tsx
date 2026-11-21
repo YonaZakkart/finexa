@@ -1,5 +1,4 @@
-import { PlusCircle, Scale, Sparkles, TrendingDown, Wallet } from 'lucide-react';
-import { useState } from 'react';
+import { Scale, Sparkles, TrendingDown, Wallet } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
@@ -8,7 +7,6 @@ import { cn } from '@/lib/cn';
 import { formatCurrency } from '@/lib/format';
 import { useAppStore } from '@/stores/app.store';
 import { selectBalance, selectNetBalance, selectTotalDebt } from '@/stores/selectors';
-import { MoneyModal } from './MoneyModal';
 
 function BalanceCard() {
   const { t } = useTranslation('dashboard');
@@ -111,7 +109,7 @@ function EmptyState() {
   );
 }
 
-function QuickActions({ onAddMoney }: { onAddMoney: () => void }) {
+function QuickActions() {
   const { t } = useTranslation('dashboard');
   const navigate = useNavigate();
 
@@ -121,9 +119,9 @@ function QuickActions({ onAddMoney }: { onAddMoney: () => void }) {
         {t('quickActions')}
       </h3>
       <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
-        <Button variant="secondary" onClick={onAddMoney}>
-          <PlusCircle aria-hidden="true" className="size-5 text-accent" />
-          {t('addMoney')}
+        <Button variant="secondary" onClick={() => navigate('/money')}>
+          <Wallet aria-hidden="true" className="size-5 text-accent" />
+          {t('manageMoney')}
         </Button>
         <Button variant="secondary" onClick={() => navigate('/debts')}>
           <TrendingDown aria-hidden="true" className="size-5 text-negative" />
@@ -137,7 +135,6 @@ function QuickActions({ onAddMoney }: { onAddMoney: () => void }) {
 export function Dashboard() {
   const { t } = useTranslation('dashboard');
   const { t: tCommon } = useTranslation('common');
-  const [moneyOpen, setMoneyOpen] = useState(false);
 
   return (
     <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-5 p-6">
@@ -153,8 +150,7 @@ export function Dashboard() {
         <NetCard />
       </div>
       <EmptyState />
-      <QuickActions onAddMoney={() => setMoneyOpen(true)} />
-      {moneyOpen ? <MoneyModal onClose={() => setMoneyOpen(false)} /> : null}
+      <QuickActions />
     </main>
   );
 }

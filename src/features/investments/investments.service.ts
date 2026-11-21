@@ -1,3 +1,5 @@
+import { assertValidTransaction } from '@/features/balance/validation';
+import { createTransaction } from '@/features/transactions/transactions.repository';
 import { db } from '@/lib/db';
 import { roundMoney } from '@/lib/money';
 import { useAppStore } from '@/stores/app.store';
@@ -9,6 +11,7 @@ import {
   createPortfolio as createPortfolioRecord,
   getPortfolio,
   putPortfolio,
+  updateInvestment,
 } from './investments.repository';
 import {
   assertCanUpdateBalance,
@@ -83,18 +86,103 @@ export async function registerInvestment(input: InvestmentInput): Promise<Invest
   const normalized = normalizeInvestment(input);
   assertValidInvestment(normalized);
 
-  const investment = await db.transaction('rw', db.portfolios, db.investments, async () => {
-    const portfolio = await getPortfolio(normalized.portfolioId);
+  const investment = await db.transaction(
+    'rw',
+    db.portfolios,
+    db.investments,
+    db.transactions,
+    async () => {
+      const portfolio = await getPortfolio(normalized.portfolioId);
 
-    if (!portfolio) {
-      throw new InvestmentError('portfolioNotFound');
+      if (!portfolio) {
+        throw new InvestmentError('portfolioNotFound');
+      }
+
+      const created = await createInvestmentRecord(normalized);
+      const transactionInput = {
+        type: 'investment' as const,
+        direction: 'debit' as const,
+        amount: normalized.depositTotal,
+        date: normalized.date,
+      };
+      assertValidTransaction(transactionInput);
+      const transaction = await createTransaction({
+        ...transactionInput,
+        type: 'investment',
+        direction: 'debit',
+        amount: normalized.depositTotal,
+        date: normalized.date,
+        relatedInvestmentId: created.id,
+        relatedPortfolioId: portfolio.id,
+        source: 'system',
+      });
+      await updateInvestment(created.id, { transactionId: transaction.id });
+      await putPortfolio({ ...portfolio, updatedAt: new Date().toISOString() });
+      return { ...created, transactionId: transaction.id };
     }
-
-    const created = await createInvestmentRecord(normalized);
-    await putPortfolio({ ...portfolio, updatedAt: new Date().toISOString() });
-    return created;
-  });
+  );
 
   await useAppStore.getState().sync();
   return investment;
+}
+
+export async function deleteInvestment(id: string, affectsBalance: boolean): Promise<void> {
+  await db.transaction('rw', db.portfolios, db.investments, db.transactions, async () => {
+    const investment = await db.investments.get(id);
+
+    if (!investment) {
+      throw new InvestmentError('investmentNotFound');
+    }
+
+    const portfolio = await getPortfolio(investment.portfolioId);
+    await db.investments.delete(id);
+
+    if (affectsBalance && investment.transactionId) {
+      await db.transactions.delete(investment.transactionId);
+    }
+
+    if (portfolio) {
+      await putPortfolio({ ...portfolio, updatedAt: new Date().toISOString() });
+    }
+  });
+
+  await useAppStore.getState().sync();
+}
+
+export async function editInvestment(
+  id: string,
+  input: InvestmentInput,
+  affectsBalance: boolean
+): Promise<void> {
+  const normalized = normalizeInvestment(input);
+  assertValidInvestment(normalized);
+
+  await db.transaction('rw', db.portfolios, db.investments, db.transactions, async () => {
+    const existing = await db.investments.get(id);
+
+    if (!existing) {
+      throw new InvestmentError('investmentNotFound');
+    }
+
+    const portfolio = await getPortfolio(existing.portfolioId);
+
+    await updateInvestment(id, {
+      ...normalized,
+      portfolioId: existing.portfolioId,
+      transactionId: existing.transactionId,
+    });
+
+    if (affectsBalance && existing.transactionId) {
+      await db.transactions.update(existing.transactionId, {
+        amount: normalized.depositTotal,
+        date: normalized.date,
+      });
+    }
+
+    if (portfolio) {
+      await putPortfolio({ ...portfolio, updatedAt: new Date().toISOString() });
+    }
+  });
+
+  await useAppStore.getState().sync();
 }

@@ -10,6 +10,7 @@ const EXPECTED_DIRECTIONS: Partial<Record<TransactionType, TransactionDirection>
   initial_balance: 'credit',
   expense: 'debit',
   debt_payment: 'debit',
+  investment: 'debit',
 };
 
 export type TransactionInput = Pick<

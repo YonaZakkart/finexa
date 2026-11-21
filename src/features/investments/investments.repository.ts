@@ -43,6 +43,13 @@ export async function createInvestment(input: NewInvestment): Promise<Investment
   return investment;
 }
 
+export async function updateInvestment(
+  id: string,
+  patch: Partial<Omit<Investment, 'id' | 'createdAt'>>
+): Promise<void> {
+  await db.investments.update(id, patch);
+}
+
 export async function listInvestments(portfolioId: string): Promise<Investment[]> {
   const rows = await db.investments
     .where('[portfolioId+date]')

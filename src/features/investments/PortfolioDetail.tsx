@@ -3,11 +3,14 @@ import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { DeleteBalanceDialog } from '@/components/ui/DeleteBalanceDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { deleteInvestment } from '@/features/investments/investments.service';
 import { getPortfolioStatus } from '@/features/investments/status';
 import { calculatePortfolioTotals } from '@/features/investments/totals';
 import { useAppStore } from '@/stores/app.store';
 import { selectPortfolioInvestments } from '@/stores/selectors';
+import type { Investment } from '@/types';
 import { InvestmentList } from './InvestmentList';
 import { PortfolioSummary } from './PortfolioSummary';
 import { UpdateBalanceModal } from './UpdateBalanceModal';
@@ -22,8 +25,11 @@ export function PortfolioDetail() {
   const investments = useAppStore((state) => state.investments);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
   const [balanceOpen, setBalanceOpen] = useState(false);
+  const [deletingInvestment, setDeletingInvestment] = useState<Investment | null>(null);
   const investmentCreated = (location.state as { investmentCreated?: boolean } | null)
     ?.investmentCreated;
+  const investmentUpdated = (location.state as { investmentUpdated?: boolean } | null)
+    ?.investmentUpdated;
 
   const portfolio = portfolios.find((item) => item.id === portfolioId);
   const portfolioInvestments = useMemo(
@@ -88,9 +94,9 @@ export function PortfolioDetail() {
         </div>
       </header>
 
-      {investmentCreated ? (
+      {investmentCreated || investmentUpdated ? (
         <p role="status" className="text-sm font-medium text-positive">
-          {t('detail.investmentCreated')}
+          {t(investmentUpdated ? 'detail.investmentUpdated' : 'detail.investmentCreated')}
         </p>
       ) : null}
 
@@ -126,10 +132,29 @@ export function PortfolioDetail() {
         </Button>
       </div>
 
-      <InvestmentList investments={portfolioInvestments} language={language} />
+      <InvestmentList
+        investments={portfolioInvestments}
+        language={language}
+        onDelete={setDeletingInvestment}
+        onEdit={(investment) =>
+          navigate(`/investments/${investment.portfolioId}/edit/${investment.id}`)
+        }
+      />
 
       {balanceOpen ? (
         <UpdateBalanceModal portfolio={portfolio} onClose={() => setBalanceOpen(false)} />
+      ) : null}
+
+      {deletingInvestment ? (
+        <DeleteBalanceDialog
+          title={t('detail.deleteTitle')}
+          description={t('detail.deleteDescription')}
+          onClose={() => setDeletingInvestment(null)}
+          onConfirm={async (affectsBalance) => {
+            await deleteInvestment(deletingInvestment.id, affectsBalance);
+            setDeletingInvestment(null);
+          }}
+        />
       ) : null}
     </main>
   );

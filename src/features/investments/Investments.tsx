@@ -1,6 +1,7 @@
-import { Briefcase, ChartPie, PlusCircle } from 'lucide-react';
+import { Briefcase, ChartPie, History, PlusCircle } from 'lucide-react';
 import { useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
 import { EmptyState } from '@/components/ui/EmptyState';
@@ -102,6 +103,7 @@ function GlobalTotalsCard({
 export function Investments() {
   const { t } = useTranslation('investments');
   const { t: tCommon } = useTranslation('common');
+  const navigate = useNavigate();
   const portfolios = useAppStore((state) => state.portfolios);
   const investments = useAppStore((state) => state.investments);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
@@ -130,17 +132,18 @@ export function Investments() {
           <h1 className="mt-2 text-3xl font-semibold tracking-tight">{t('title')}</h1>
           <p className="mt-1 text-sm text-text-muted">{t('subtitle')}</p>
         </div>
-        {portfolios.length > 0 ? (
-          <Button
-            variant="secondary"
-            size="sm"
-            className="self-start sm:shrink-0"
-            onClick={() => setNewPortfolioOpen(true)}
-          >
-            <PlusCircle aria-hidden="true" className="size-4" />
-            {t('newPortfolio')}
+        <div className="flex flex-wrap gap-2 self-start sm:shrink-0">
+          <Button variant="secondary" size="sm" onClick={() => navigate('/investments/history')}>
+            <History aria-hidden="true" className="size-4" />
+            {t('history.short')}
           </Button>
-        ) : null}
+          {portfolios.length > 0 ? (
+            <Button variant="secondary" size="sm" onClick={() => setNewPortfolioOpen(true)}>
+              <PlusCircle aria-hidden="true" className="size-4" />
+              {t('newPortfolio')}
+            </Button>
+          ) : null}
+        </div>
       </header>
 
       {portfolios.length === 0 ? (

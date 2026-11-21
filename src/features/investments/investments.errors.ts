@@ -1,5 +1,6 @@
 export type InvestmentErrorCode =
   | 'portfolioNotFound'
+  | 'investmentNotFound'
   | 'missingPortfolioId'
   | 'invalidPortfolioName'
   | 'invalidPortfolioBroker'

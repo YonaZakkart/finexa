@@ -3,7 +3,8 @@ export type TransactionType =
   | 'expense'
   | 'debt_payment'
   | 'adjustment'
-  | 'initial_balance';
+  | 'initial_balance'
+  | 'investment';
 
 export type TransactionDirection = 'credit' | 'debit';
 export type DebtStatus = 'active' | 'paid';
@@ -38,6 +39,7 @@ export interface Investment {
   purchaseCommission: number;
   commissionFromResidual: boolean;
   residualDelta: number;
+  transactionId?: string;
   note?: string;
   createdAt: string;
 }
@@ -63,6 +65,8 @@ export interface Transaction {
   date: string;
   createdAt: string;
   relatedDebtId?: string;
+  relatedInvestmentId?: string;
+  relatedPortfolioId?: string;
   source?: TransactionSource;
 }
 
