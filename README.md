@@ -1,9 +1,17 @@
 # Finexa
 
-Personal finance PWA focused on daily expenses, balance and debt control. Mobile-first,
-offline-first and installable.
+Personal finance PWA focused on daily expenses, balance, debt control and investment
+portfolio monitoring. Mobile-first, offline-first and installable.
 
-> Status: Phase 1 — Foundation.
+> Status: 0.2.0 — Investment monitoring.
+
+## Features
+
+- Daily expenses with categories, history, editing and daily/weekly charts.
+- Balance, debts and optional onboarding.
+- Investment portfolio monitoring: portfolios, deposits, purchases, commissions,
+  residual money and a manual current balance.
+- Offline-first PWA, Spanish/English and the glass-dark theme.
 
 ## Stack
 
