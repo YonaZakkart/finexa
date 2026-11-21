@@ -272,6 +272,20 @@ export const es = {
       bonds: 'Bonos',
       other: 'Otro',
     },
+    history: {
+      title: 'Historial de inversiones',
+      short: 'Historial',
+      subtitle: 'Todas las operaciones registradas en tus portafolios.',
+      portfolioFilter: 'Portafolio',
+      allPortfolios: 'Todos los portafolios',
+      dateFilter: 'Fecha',
+      totalDeposit: 'Depósito total',
+      totalPurchase: 'Compra total',
+      deposit: 'Depósito',
+      purchase: 'Compra',
+      empty: 'No hay inversiones registradas',
+      emptyHint: 'Registra una inversión para verla aquí.',
+    },
     form: {
       description:
         'Datos generales del portafolio. El saldo y las inversiones se registran después.',
