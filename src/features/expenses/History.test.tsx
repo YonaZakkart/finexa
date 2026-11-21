@@ -173,7 +173,8 @@ describe('History', () => {
     renderHistory();
 
     expect((await screen.findAllByText('Gastos diarios')).length).toBeGreaterThan(0);
-    await user.click(screen.getByRole('link', { name: /Editar/ }));
+    await user.click(screen.getByLabelText('Acciones'));
+    await user.click(screen.getByRole('menuitem', { name: /Editar/ }));
 
     expect(screen.getByText('Edit page')).toBeInTheDocument();
   });

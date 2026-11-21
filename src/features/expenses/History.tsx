@@ -2,9 +2,12 @@ import { ArrowLeft, ChevronLeft, ChevronRight, Edit2 } from 'lucide-react';
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
+import { ActionMenu } from '@/components/ui/ActionMenu';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { DeleteBalanceDialog } from '@/components/ui/DeleteBalanceDialog';
 import { Skeleton } from '@/components/ui/Skeleton';
+import { deleteExpense } from '@/features/balance/transactions.service';
 import { getCategory, getSubcategory } from '@/features/expenses/categories';
 import { DailySummaryCard } from '@/features/summary/DailySummaryCard';
 import { listExpensesByDate } from '@/features/transactions/transactions.repository';
@@ -32,6 +35,7 @@ export function History() {
   const [expenses, setExpenses] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
   const requestIdRef = useRef(0);
 
   const today = getLocalDateString();
@@ -233,14 +237,24 @@ export function History() {
                     </div>
                   </div>
                   <div className="mt-3 flex justify-end">
-                    <Link
-                      to={`/expenses/${expense.id}/edit`}
-                      aria-label={`${t('edit')} ${categoryLabel}`}
-                      className="inline-flex min-h-11 items-center gap-1 rounded-md px-2 text-xs font-medium text-text-muted transition-colors hover:bg-surface hover:text-text"
-                    >
-                      <Edit2 aria-hidden="true" className="size-4" />
-                      {t('edit')}
-                    </Link>
+                    <ActionMenu label={t('actions')}>
+                      <Link
+                        role="menuitem"
+                        to={`/expenses/${expense.id}/edit`}
+                        className="flex min-h-11 items-center gap-2 rounded-md px-3 text-sm text-text-muted hover:bg-surface hover:text-text"
+                      >
+                        <Edit2 aria-hidden="true" className="size-4" />
+                        {t('edit')}
+                      </Link>
+                      <button
+                        role="menuitem"
+                        type="button"
+                        onClick={() => setDeletingId(expense.id)}
+                        className="flex min-h-11 w-full items-center rounded-md px-3 text-sm text-negative hover:bg-surface"
+                      >
+                        {t('delete')}
+                      </button>
+                    </ActionMenu>
                   </div>
                 </li>
               );
@@ -248,6 +262,17 @@ export function History() {
           </ul>
         )}
       </Card>
+      {deletingId ? (
+        <DeleteBalanceDialog
+          title={t('deleteTitle')}
+          description={t('deleteDescription')}
+          onClose={() => setDeletingId(null)}
+          onConfirm={async (affectsBalance) => {
+            await deleteExpense(deletingId, affectsBalance);
+            setDeletingId(null);
+          }}
+        />
+      ) : null}
     </main>
   );
 }

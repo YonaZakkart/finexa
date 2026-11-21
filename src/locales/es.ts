@@ -29,6 +29,8 @@ export const es = {
     comingSoon: 'Próximamente',
     loadError: 'No pudimos cargar tus datos locales. Inténtalo de nuevo.',
     retry: 'Reintentar',
+    deleteKeepBalance: 'No, mantener balance',
+    deleteAffectBalance: 'Sí, afectar balance',
   },
   dashboard: {
     title: 'Control de gastos',
@@ -96,6 +98,11 @@ export const es = {
     previousDay: 'Día anterior',
     nextDay: 'Día siguiente',
     edit: 'Editar',
+    actions: 'Acciones',
+    delete: 'Eliminar',
+    deleteTitle: 'Eliminar gasto',
+    deleteDescription:
+      '¿Este cambio afecta el balance actual? Sí lo aumenta; No crea un ajuste compensatorio y mantiene el balance.',
     editTitle: 'Editar gasto',
     saveChanges: 'Guardar cambios',
     notFound: 'Gasto no encontrado',
@@ -326,6 +333,11 @@ export const es = {
       updateBalance: 'Actualizar saldo',
       investmentCreated: 'Inversión registrada.',
       balanceOutflow: 'Salida del balance',
+      actions: 'Acciones',
+      delete: 'Eliminar',
+      deleteTitle: 'Eliminar inversión',
+      deleteDescription:
+        '¿Revertir la salida del balance? Sí elimina el movimiento vinculado; No lo conserva y mantiene el balance.',
       balanceRequiresInvestment: 'Registra al menos una inversión para actualizar el saldo.',
     },
     balance: {
@@ -448,5 +460,6 @@ export const es = {
     residualNegativeNotAllowed: 'El residual no puede ser negativo en este modo',
     balanceRequiresInvestment: 'Registra al menos una inversión antes de actualizar el saldo',
     invalidBalance: 'El saldo no puede ser negativo',
+    investmentNotFound: 'La inversión no existe',
   },
 } as const;

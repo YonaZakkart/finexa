@@ -29,6 +29,8 @@ export const en = {
     comingSoon: 'Coming soon',
     loadError: 'We could not load your local data. Please try again.',
     retry: 'Retry',
+    deleteKeepBalance: 'No, keep balance',
+    deleteAffectBalance: 'Yes, affect balance',
   },
   dashboard: {
     title: 'Expense control',
@@ -96,6 +98,11 @@ export const en = {
     previousDay: 'Previous day',
     nextDay: 'Next day',
     edit: 'Edit',
+    actions: 'Actions',
+    delete: 'Delete',
+    deleteTitle: 'Delete expense',
+    deleteDescription:
+      'Does this change affect the current balance? Yes increases it; No creates a compensating adjustment and keeps the balance.',
     editTitle: 'Edit expense',
     saveChanges: 'Save changes',
     notFound: 'Expense not found',
@@ -325,6 +332,11 @@ export const en = {
       updateBalance: 'Update balance',
       investmentCreated: 'Investment recorded.',
       balanceOutflow: 'Balance outflow',
+      actions: 'Actions',
+      delete: 'Delete',
+      deleteTitle: 'Delete investment',
+      deleteDescription:
+        'Revert the balance outflow? Yes deletes the linked movement; No keeps it and preserves the balance.',
       balanceRequiresInvestment: 'Record at least one investment to update the balance.',
     },
     balance: {
@@ -447,5 +459,6 @@ export const en = {
     residualNegativeNotAllowed: 'The residual cannot be negative in this mode',
     balanceRequiresInvestment: 'Record at least one investment before updating the balance',
     invalidBalance: 'The balance cannot be negative',
+    investmentNotFound: 'The investment does not exist',
   },
 } as const;
