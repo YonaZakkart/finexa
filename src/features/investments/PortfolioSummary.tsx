@@ -34,13 +34,12 @@ export function PortfolioSummary({
           <h2 id="portfolio-summary-title" className="text-sm font-medium text-text-muted">
             {t('currentBalance')}
           </h2>
-          <p
-            aria-live="polite"
-            className={cn('mt-2 text-4xl font-semibold tracking-tight tabular-nums', tone)}
-          >
-            {formatCurrency(portfolio.currentBalance, language)}
-          </p>
-          <p className={cn('mt-1 text-xs font-medium', tone)}>{t(`status.${status}`)}</p>
+          <div aria-live="polite">
+            <p className={cn('mt-2 text-4xl font-semibold tracking-tight tabular-nums', tone)}>
+              {formatCurrency(portfolio.currentBalance, language)}
+            </p>
+            <p className={cn('mt-1 text-xs font-medium', tone)}>{t(`status.${status}`)}</p>
+          </div>
         </div>
         <Wallet aria-hidden="true" className={cn('size-5 shrink-0', tone)} />
       </div>

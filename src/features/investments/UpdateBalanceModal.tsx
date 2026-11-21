@@ -36,7 +36,12 @@ export function UpdateBalanceModal({
 
     const parsed = Number.parseFloat(balance);
 
-    if (!Number.isFinite(parsed) || parsed < 0) {
+    if (balance.trim() === '' || !Number.isFinite(parsed)) {
+      setError(t('balance.required'));
+      return;
+    }
+
+    if (parsed < 0) {
       setError(tErrors('invalidBalance'));
       return;
     }

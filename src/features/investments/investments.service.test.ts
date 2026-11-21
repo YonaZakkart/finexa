@@ -3,6 +3,8 @@ import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '@/lib/db';
 import { useAppStore } from '@/stores/app.store';
 import { createPortfolio, registerInvestment, updateBalance } from './investments.service';
+import { getPortfolioStatus } from './status';
+import { calculatePortfolioTotals } from './totals';
 import type { InvestmentInput } from './validation';
 
 const PAST_DATE = '2020-01-15';
@@ -173,6 +175,49 @@ describe('registerInvestment', () => {
 
     expect(investment.residualDelta).toBe(-0.4);
     expect(await db.investments.count()).toBe(1);
+  });
+
+  it('supports the full portfolio flow and derived totals', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+
+    await registerInvestment(
+      investmentInput(portfolio.id, {
+        depositTotal: 100,
+        bankCommission: 0.5,
+        brokerCommission: 0.2,
+        availableTotal: 99.3,
+        purchaseAmount: 99,
+        purchaseCommission: 0.3,
+        residualDelta: 0,
+      })
+    );
+    await registerInvestment(
+      investmentInput(portfolio.id, {
+        date: '2020-01-16',
+        depositTotal: 50,
+        bankCommission: 0,
+        brokerCommission: 0,
+        availableTotal: 50,
+        purchaseAmount: 50,
+        purchaseCommission: 0.5,
+        commissionFromResidual: true,
+        residualDelta: -0.5,
+      })
+    );
+    await updateBalance(portfolio.id, 160);
+
+    const investments = await db.investments.where('portfolioId').equals(portfolio.id).toArray();
+    const totals = calculatePortfolioTotals(investments);
+
+    expect(totals).toMatchObject({
+      investedTotal: 149,
+      depositedTotal: 150,
+      commissionsTotal: 1.5,
+      residualTotal: -0.5,
+      breakEven: 150.5,
+    });
+    expect(getPortfolioStatus(160, totals, true)).toBe('green');
+    expect(useAppStore.getState().portfolios[0].currentBalance).toBe(160);
   });
 
   it('rejects a purchase above the available total without writing', async () => {
