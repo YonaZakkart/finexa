@@ -2,6 +2,10 @@ import { roundMoney } from '@/lib/money';
 import type { Debt, Transaction } from '@/types';
 
 export function getTransactionEffect(transaction: Transaction): number {
+  if (transaction.affectsBalance === false) {
+    return 0;
+  }
+
   return transaction.direction === 'credit' ? transaction.amount : -transaction.amount;
 }
 

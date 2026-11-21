@@ -68,6 +68,7 @@ export interface Transaction {
   relatedInvestmentId?: string;
   relatedPortfolioId?: string;
   source?: TransactionSource;
+  affectsBalance?: boolean;
 }
 
 export interface Settings {

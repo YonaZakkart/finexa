@@ -41,6 +41,14 @@ describe('getTransactionEffect', () => {
     expect(getTransactionEffect(transaction({ direction: 'credit', amount: 25 }))).toBe(25);
     expect(getTransactionEffect(transaction({ direction: 'debit', amount: 25 }))).toBe(-25);
   });
+
+  it('ignores transactions that do not affect the balance', () => {
+    expect(
+      getTransactionEffect(
+        transaction({ type: 'investment', direction: 'debit', amount: 25, affectsBalance: false })
+      )
+    ).toBe(0);
+  });
 });
 
 describe('calculateBalance', () => {
@@ -83,6 +91,16 @@ describe('calculateBalance', () => {
 
   it('supports a negative balance', () => {
     expect(calculateBalance([transaction({ direction: 'debit', amount: 15.5 })])).toBe(-15.5);
+  });
+
+  it('skips movements flagged as not affecting the balance', () => {
+    const ledger = [
+      transaction({ type: 'income', direction: 'credit', amount: 100 }),
+      transaction({ type: 'investment', direction: 'debit', amount: 40, affectsBalance: false }),
+      transaction({ type: 'investment', direction: 'debit', amount: 10 }),
+    ];
+
+    expect(calculateBalance(ledger)).toBe(90);
   });
 });
 
