@@ -5,15 +5,16 @@ import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { TransactionError } from '@/features/balance/errors';
 import { roundMoney } from '@/lib/money';
+import type { Debt } from '@/types';
 import { MAX_DEBT_NAME_LENGTH } from './constants';
-import { createDebt } from './debts.service';
+import { createDebt, editDebt } from './debts.service';
 
-export function AddDebtModal({ onClose }: { onClose: () => void }) {
+export function AddDebtModal({ debt, onClose }: { debt?: Debt; onClose: () => void }) {
   const { t } = useTranslation('debts');
   const { t: tCommon } = useTranslation('common');
   const { t: tErrors } = useTranslation('errors');
-  const [name, setName] = useState('');
-  const [amount, setAmount] = useState('');
+  const [name, setName] = useState(debt?.name ?? '');
+  const [amount, setAmount] = useState(debt ? String(debt.amount) : '');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -47,7 +48,11 @@ export function AddDebtModal({ onClose }: { onClose: () => void }) {
     setError(null);
 
     try {
-      await createDebt({ name: trimmedName, amount: roundMoney(parsedAmount) });
+      if (debt) {
+        await editDebt(debt.id, { name: trimmedName, amount: roundMoney(parsedAmount) });
+      } else {
+        await createDebt({ name: trimmedName, amount: roundMoney(parsedAmount) });
+      }
       onClose();
     } catch (caught) {
       setError(caught instanceof TransactionError ? tErrors(caught.code) : t('form.error'));
@@ -60,7 +65,7 @@ export function AddDebtModal({ onClose }: { onClose: () => void }) {
     <Modal
       open
       onClose={handleClose}
-      title={t('addDebt')}
+      title={debt ? t('editDebt') : t('addDebt')}
       description={t('form.description')}
       closeLabel={tCommon('close')}
     >
