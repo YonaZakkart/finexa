@@ -3,14 +3,16 @@ import userEvent from '@testing-library/user-event';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import type { Portfolio } from '@/types';
 import { InvestmentError } from './investments.errors';
-import { createPortfolio } from './investments.service';
+import { createPortfolio, updatePortfolio } from './investments.service';
 import { NewPortfolioModal } from './NewPortfolioModal';
 
 vi.mock('./investments.service', () => ({
   createPortfolio: vi.fn(),
+  updatePortfolio: vi.fn(),
 }));
 
 const createPortfolioMock = vi.mocked(createPortfolio);
+const updatePortfolioMock = vi.mocked(updatePortfolio);
 
 const createdPortfolio: Portfolio = {
   id: 'portfolio-1',
@@ -25,6 +27,8 @@ const createdPortfolio: Portfolio = {
 beforeEach(() => {
   createPortfolioMock.mockReset();
   createPortfolioMock.mockResolvedValue(createdPortfolio);
+  updatePortfolioMock.mockReset();
+  updatePortfolioMock.mockResolvedValue(undefined);
 });
 
 describe('NewPortfolioModal', () => {
@@ -93,6 +97,39 @@ describe('NewPortfolioModal', () => {
       'El tipo de portafolio no es válido'
     );
     expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('prefills and updates an existing portfolio', async () => {
+    const user = userEvent.setup();
+    const onClose = vi.fn();
+    const onSaved = vi.fn();
+    render(<NewPortfolioModal portfolio={createdPortfolio} onClose={onClose} onSaved={onSaved} />);
+
+    expect(screen.getByLabelText('Nombre')).toHaveValue('VOO');
+    expect(screen.getByLabelText('Broker')).toHaveValue('Hapi');
+    expect(screen.getByLabelText('Tipo')).toHaveValue('etf');
+
+    await user.clear(screen.getByLabelText('Nombre'));
+    await user.type(screen.getByLabelText('Nombre'), 'NVIDIA');
+    await user.selectOptions(screen.getByLabelText('Tipo'), 'stocks');
+    await user.click(screen.getByRole('button', { name: 'Guardar cambios' }));
+
+    await waitFor(() =>
+      expect(updatePortfolioMock).toHaveBeenCalledWith('portfolio-1', {
+        name: 'NVIDIA',
+        type: 'stocks',
+        broker: 'Hapi',
+      })
+    );
+    expect(createPortfolioMock).not.toHaveBeenCalled();
+    await waitFor(() => expect(onSaved).toHaveBeenCalled());
+    expect(onClose).toHaveBeenCalled();
+  });
+
+  it('shows the edit title for an existing portfolio', () => {
+    render(<NewPortfolioModal portfolio={createdPortfolio} onClose={vi.fn()} />);
+
+    expect(screen.getByRole('heading', { name: 'Editar portafolio' })).toBeInTheDocument();
   });
 
   it('closes from the cancel button', async () => {

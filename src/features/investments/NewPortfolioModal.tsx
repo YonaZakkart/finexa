@@ -4,18 +4,26 @@ import { Button } from '@/components/ui/Button';
 import { Input } from '@/components/ui/Input';
 import { Modal } from '@/components/ui/Modal';
 import { Select } from '@/components/ui/Select';
-import type { PortfolioType } from '@/types';
+import type { Portfolio, PortfolioType } from '@/types';
 import { InvestmentError } from './investments.errors';
-import { createPortfolio } from './investments.service';
+import { createPortfolio, updatePortfolio } from './investments.service';
 import { MAX_BROKER_LENGTH, MAX_PORTFOLIO_NAME_LENGTH, PORTFOLIO_TYPES } from './validation';
 
-export function NewPortfolioModal({ onClose }: { onClose: () => void }) {
+export function NewPortfolioModal({
+  portfolio,
+  onClose,
+  onSaved,
+}: {
+  portfolio?: Portfolio;
+  onClose: () => void;
+  onSaved?: () => void;
+}) {
   const { t } = useTranslation('investments');
   const { t: tCommon } = useTranslation('common');
   const { t: tErrors } = useTranslation('errors');
-  const [name, setName] = useState('');
-  const [type, setType] = useState<PortfolioType>('stocks');
-  const [broker, setBroker] = useState('');
+  const [name, setName] = useState(portfolio?.name ?? '');
+  const [type, setType] = useState<PortfolioType>(portfolio?.type ?? 'stocks');
+  const [broker, setBroker] = useState(portfolio?.broker ?? '');
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -49,7 +57,15 @@ export function NewPortfolioModal({ onClose }: { onClose: () => void }) {
     setError(null);
 
     try {
-      await createPortfolio({ name: trimmedName, type, broker: trimmedBroker });
+      const input = { name: trimmedName, type, broker: trimmedBroker };
+
+      if (portfolio) {
+        await updatePortfolio(portfolio.id, input);
+      } else {
+        await createPortfolio(input);
+      }
+
+      onSaved?.();
       onClose();
     } catch (caught) {
       setError(caught instanceof InvestmentError ? tErrors(caught.code) : t('form.saveError'));
@@ -62,8 +78,8 @@ export function NewPortfolioModal({ onClose }: { onClose: () => void }) {
     <Modal
       open
       onClose={handleClose}
-      title={t('newPortfolio')}
-      description={t('form.description')}
+      title={portfolio ? t('editPortfolio') : t('newPortfolio')}
+      description={portfolio ? t('form.editDescription') : t('form.description')}
       closeLabel={tCommon('close')}
     >
       <form onSubmit={handleSubmit} noValidate className="space-y-4">
@@ -123,7 +139,7 @@ export function NewPortfolioModal({ onClose }: { onClose: () => void }) {
             {tCommon('cancel')}
           </Button>
           <Button type="submit" className="flex-1" isLoading={isSubmitting}>
-            {tCommon('save')}
+            {portfolio ? t('form.saveChanges') : tCommon('save')}
           </Button>
         </div>
       </form>

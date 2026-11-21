@@ -271,6 +271,18 @@ export const en = {
     portfolios: 'Portfolios',
     portfoliosHint: 'Sorted by name',
     newPortfolio: 'New portfolio',
+    editPortfolio: 'Edit portfolio',
+    actions: 'Actions',
+    edit: 'Edit',
+    delete: 'Delete',
+    updated: 'Portfolio updated.',
+    deleted: 'Portfolio deleted.',
+    deleteTitle: 'Delete portfolio',
+    deleteDescription: '“{{name}}” will be deleted. This cannot be undone.',
+    deleteWithInvestmentsTitle: 'Delete portfolio with investments',
+    deleteWithInvestmentsDescription:
+      'The investments in “{{name}}” will also be deleted ({{total}}). Should their balance outflow be reverted? If you choose no, the movements are kept as generic outflows.',
+    deleteError: 'We could not delete the portfolio. Please try again.',
     totals: 'Totals',
     totalsHint: 'All portfolios',
     currentBalance: 'Current balance',
@@ -315,6 +327,9 @@ export const en = {
     },
     form: {
       description: 'General portfolio data. Balance and investments are recorded later.',
+      editDescription:
+        'Update the name, type or broker. The balance and investments stay unchanged.',
+      saveChanges: 'Save changes',
       name: 'Name',
       namePlaceholder: 'E.g. VOO, NVIDIA, Microsoft',
       type: 'Type',
