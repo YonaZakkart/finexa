@@ -1,4 +1,5 @@
 import { useTranslation } from 'react-i18next';
+import { ActionMenu } from '@/components/ui/ActionMenu';
 import { Card } from '@/components/ui/Card';
 import { cn } from '@/lib/cn';
 import { formatCurrency, formatDate } from '@/lib/format';
@@ -9,9 +10,10 @@ import type { Investment } from '@/types';
 export interface InvestmentListProps {
   investments: Investment[];
   language: SupportedLanguage;
+  onDelete?: (investment: Investment) => void;
 }
 
-export function InvestmentList({ investments, language }: InvestmentListProps) {
+export function InvestmentList({ investments, language, onDelete }: InvestmentListProps) {
   const { t } = useTranslation('investments');
 
   return (
@@ -97,6 +99,18 @@ export function InvestmentList({ investments, language }: InvestmentListProps) {
                     </span>
                   </p>
                 ) : null}
+                <div className="mt-2 flex justify-end">
+                  <ActionMenu label={t('detail.actions')}>
+                    <button
+                      role="menuitem"
+                      type="button"
+                      onClick={() => onDelete?.(investment)}
+                      className="flex min-h-11 w-full items-center rounded-md px-3 text-sm text-negative hover:bg-surface"
+                    >
+                      {t('detail.delete')}
+                    </button>
+                  </ActionMenu>
+                </div>
               </li>
             );
           })}
