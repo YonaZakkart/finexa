@@ -34,6 +34,9 @@ const PortfolioDetail = lazy(() =>
 const NewInvestment = lazy(() =>
   import('@/features/investments/NewInvestment').then((m) => ({ default: m.NewInvestment }))
 );
+const InvestmentHistory = lazy(() =>
+  import('@/features/investments/InvestmentHistory').then((m) => ({ default: m.InvestmentHistory }))
+);
 
 function LoadingFallback() {
   return (
@@ -137,6 +140,7 @@ function AppRoutes() {
           <Route path="/summary" element={<Summary />} />
           <Route path="/debts" element={<Debts />} />
           <Route path="/investments" element={<Investments />} />
+          <Route path="/investments/history" element={<InvestmentHistory />} />
           <Route path="/investments/:portfolioId" element={<PortfolioDetail />} />
           <Route path="/investments/:portfolioId/new" element={<NewInvestment />} />
         </Route>
