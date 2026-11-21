@@ -61,7 +61,7 @@ describe('Dexie v1 to v2 migration', () => {
   it('upgrades the schema and preserves the MVP data', async () => {
     await db.open();
 
-    expect(db.verno).toBe(2);
+    expect(db.verno).toBe(3);
     expect(await db.transactions.count()).toBe(1);
     expect(await db.debts.count()).toBe(1);
     expect(await db.settings.count()).toBe(1);

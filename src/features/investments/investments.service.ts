@@ -1,3 +1,5 @@
+import { assertValidTransaction } from '@/features/balance/validation';
+import { createTransaction } from '@/features/transactions/transactions.repository';
 import { db } from '@/lib/db';
 import { roundMoney } from '@/lib/money';
 import { useAppStore } from '@/stores/app.store';
@@ -9,6 +11,7 @@ import {
   createPortfolio as createPortfolioRecord,
   getPortfolio,
   putPortfolio,
+  updateInvestment,
 } from './investments.repository';
 import {
   assertCanUpdateBalance,
@@ -83,17 +86,41 @@ export async function registerInvestment(input: InvestmentInput): Promise<Invest
   const normalized = normalizeInvestment(input);
   assertValidInvestment(normalized);
 
-  const investment = await db.transaction('rw', db.portfolios, db.investments, async () => {
-    const portfolio = await getPortfolio(normalized.portfolioId);
+  const investment = await db.transaction(
+    'rw',
+    db.portfolios,
+    db.investments,
+    db.transactions,
+    async () => {
+      const portfolio = await getPortfolio(normalized.portfolioId);
 
-    if (!portfolio) {
-      throw new InvestmentError('portfolioNotFound');
+      if (!portfolio) {
+        throw new InvestmentError('portfolioNotFound');
+      }
+
+      const created = await createInvestmentRecord(normalized);
+      const transactionInput = {
+        type: 'investment' as const,
+        direction: 'debit' as const,
+        amount: normalized.depositTotal,
+        date: normalized.date,
+      };
+      assertValidTransaction(transactionInput);
+      const transaction = await createTransaction({
+        ...transactionInput,
+        type: 'investment',
+        direction: 'debit',
+        amount: normalized.depositTotal,
+        date: normalized.date,
+        relatedInvestmentId: created.id,
+        relatedPortfolioId: portfolio.id,
+        source: 'system',
+      });
+      await updateInvestment(created.id, { transactionId: transaction.id });
+      await putPortfolio({ ...portfolio, updatedAt: new Date().toISOString() });
+      return { ...created, transactionId: transaction.id };
     }
-
-    const created = await createInvestmentRecord(normalized);
-    await putPortfolio({ ...portfolio, updatedAt: new Date().toISOString() });
-    return created;
-  });
+  );
 
   await useAppStore.getState().sync();
   return investment;

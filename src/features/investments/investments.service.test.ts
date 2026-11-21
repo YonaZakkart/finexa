@@ -120,7 +120,7 @@ describe('updateBalance', () => {
     expect(updated?.currentBalance).toBe(150.01);
     expect(updated?.balanceUpdatedAt).toBeTruthy();
     expect(updated?.updatedAt).toBeTruthy();
-    expect(await db.transactions.count()).toBe(0);
+    expect(await db.transactions.count()).toBe(1);
     expect(useAppStore.getState().portfolios[0].currentBalance).toBe(150.01);
   });
 });
@@ -150,7 +150,15 @@ describe('registerInvestment', () => {
     expect(investment.depositTotal).toBe(100);
     expect(investment.bankCommission).toBe(0);
     expect(await db.investments.count()).toBe(1);
-    expect(await db.transactions.count()).toBe(0);
+    expect(await db.transactions.count()).toBe(1);
+    expect(investment.transactionId).toBeTruthy();
+    const outflow = await db.transactions.get(investment.transactionId ?? '');
+    expect(outflow).toMatchObject({
+      type: 'investment',
+      direction: 'debit',
+      amount: 100,
+      relatedInvestmentId: investment.id,
+    });
     expect(useAppStore.getState().investments).toHaveLength(1);
   });
 
@@ -175,6 +183,7 @@ describe('registerInvestment', () => {
 
     expect(investment.residualDelta).toBe(-0.4);
     expect(await db.investments.count()).toBe(1);
+    expect(await db.transactions.count()).toBe(1);
   });
 
   it('supports the full portfolio flow and derived totals', async () => {

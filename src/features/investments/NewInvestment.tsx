@@ -310,6 +310,13 @@ export function NewInvestment() {
               placeholder="0.00"
             />
           </div>
+          {toAmount(depositTotal) > 0 ? (
+            <p className="text-xs text-text-muted">
+              {t('newInvestment.balanceOutflowHint', {
+                amount: formatCurrency(toAmount(depositTotal), language),
+              })}
+            </p>
+          ) : null}
         </Card>
 
         <Card className="space-y-4 p-5">
