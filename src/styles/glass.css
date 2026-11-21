@@ -4,19 +4,10 @@
     border: 1px solid var(--color-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-glass);
-    backdrop-filter: blur(var(--blur-glass)) saturate(140%);
-    -webkit-backdrop-filter: blur(var(--blur-glass)) saturate(140%);
   }
 
   .glass-card--strong {
     background-color: var(--color-surface-strong);
     border-color: var(--color-border-strong);
-  }
-
-  @supports not ((backdrop-filter: blur(1px)) or (-webkit-backdrop-filter: blur(1px))) {
-    .glass-card,
-    .glass-card--strong {
-      background-color: var(--color-bg-elevated);
-    }
   }
 }
