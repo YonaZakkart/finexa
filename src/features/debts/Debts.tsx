@@ -2,14 +2,17 @@ import { ArrowLeft, CheckCircle2, PlusCircle, TrendingDown } from 'lucide-react'
 import { useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
+import { ActionMenu } from '@/components/ui/ActionMenu';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { DeleteBalanceDialog } from '@/components/ui/DeleteBalanceDialog';
 import { cn } from '@/lib/cn';
 import { formatCurrency, formatDate } from '@/lib/format';
 import { useAppStore } from '@/stores/app.store';
 import { selectTotalDebt } from '@/stores/selectors';
 import type { Debt } from '@/types';
 import { AddDebtModal } from './AddDebtModal';
+import { deleteDebt } from './debts.service';
 import { PayDebtDialog } from './PayDebtDialog';
 
 function sortByCreatedAt(debts: Debt[]): Debt[] {
@@ -24,6 +27,8 @@ export function Debts() {
   const totalDebt = useAppStore(selectTotalDebt);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
   const [addOpen, setAddOpen] = useState(false);
+  const [editingDebt, setEditingDebt] = useState<import('@/types').Debt | null>(null);
+  const [deletingDebt, setDeletingDebt] = useState<import('@/types').Debt | null>(null);
   const [payingDebt, setPayingDebt] = useState<Debt | null>(null);
 
   const activeDebts = sortByCreatedAt(debts.filter((debt) => debt.status === 'active'));
@@ -90,14 +95,30 @@ export function Debts() {
                       <p className="mt-1 text-xs text-text-muted">
                         {formatCurrency(debt.amount, language)}
                       </p>
-                      <Button
-                        size="sm"
-                        className="mt-3 w-full sm:w-auto"
-                        onClick={() => setPayingDebt(debt)}
-                      >
-                        <CheckCircle2 aria-hidden="true" className="size-4" />
-                        {t('markPaid')}
-                      </Button>
+                      <div className="mt-3 flex items-center gap-2">
+                        <Button size="sm" onClick={() => setPayingDebt(debt)}>
+                          <CheckCircle2 aria-hidden="true" className="size-4" />
+                          {t('markPaid')}
+                        </Button>
+                        <ActionMenu label={t('actions')}>
+                          <button
+                            role="menuitem"
+                            type="button"
+                            onClick={() => setEditingDebt(debt)}
+                            className="flex min-h-11 w-full items-center rounded-md px-3 text-sm hover:bg-surface"
+                          >
+                            {t('edit')}
+                          </button>
+                          <button
+                            role="menuitem"
+                            type="button"
+                            onClick={() => setDeletingDebt(debt)}
+                            className="flex min-h-11 w-full items-center rounded-md px-3 text-sm text-negative hover:bg-surface"
+                          >
+                            {t('delete')}
+                          </button>
+                        </ActionMenu>
+                      </div>
                     </li>
                   ))}
                 </ul>
@@ -126,9 +147,29 @@ export function Debts() {
                               {formatCurrency(debt.amount, language)}
                             </p>
                           </div>
-                          <span className="text-xs font-medium text-positive">
-                            {t('paidBadge')}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs font-medium text-positive">
+                              {t('paidBadge')}
+                            </span>
+                            <ActionMenu label={t('actions')}>
+                              <button
+                                role="menuitem"
+                                type="button"
+                                onClick={() => setEditingDebt(debt)}
+                                className="flex min-h-11 w-full items-center rounded-md px-3 text-sm hover:bg-surface"
+                              >
+                                {t('edit')}
+                              </button>
+                              <button
+                                role="menuitem"
+                                type="button"
+                                onClick={() => setDeletingDebt(debt)}
+                                className="flex min-h-11 w-full items-center rounded-md px-3 text-sm text-negative hover:bg-surface"
+                              >
+                                {t('delete')}
+                              </button>
+                            </ActionMenu>
+                          </div>
                         </div>
                         {hasPaidDate ? (
                           <p className="mt-2 text-xs text-text-muted">
@@ -146,6 +187,20 @@ export function Debts() {
       </Card>
 
       {addOpen ? <AddDebtModal onClose={() => setAddOpen(false)} /> : null}
+      {editingDebt ? (
+        <AddDebtModal debt={editingDebt} onClose={() => setEditingDebt(null)} />
+      ) : null}
+      {deletingDebt ? (
+        <DeleteBalanceDialog
+          title={t('deleteTitle')}
+          description={t('deleteDescription')}
+          onClose={() => setDeletingDebt(null)}
+          onConfirm={async (affectsBalance) => {
+            await deleteDebt(deletingDebt.id, affectsBalance);
+            setDeletingDebt(null);
+          }}
+        />
+      ) : null}
       {payingDebt ? <PayDebtDialog debt={payingDebt} onClose={() => setPayingDebt(null)} /> : null}
     </main>
   );
