@@ -145,6 +145,7 @@ function AppRoutes() {
           <Route path="/investments/history" element={<InvestmentHistory />} />
           <Route path="/investments/:portfolioId" element={<PortfolioDetail />} />
           <Route path="/investments/:portfolioId/new" element={<NewInvestment />} />
+          <Route path="/investments/:portfolioId/edit/:investmentId" element={<NewInvestment />} />
         </Route>
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

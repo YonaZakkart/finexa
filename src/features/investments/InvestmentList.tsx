@@ -11,9 +11,10 @@ export interface InvestmentListProps {
   investments: Investment[];
   language: SupportedLanguage;
   onDelete?: (investment: Investment) => void;
+  onEdit?: (investment: Investment) => void;
 }
 
-export function InvestmentList({ investments, language, onDelete }: InvestmentListProps) {
+export function InvestmentList({ investments, language, onDelete, onEdit }: InvestmentListProps) {
   const { t } = useTranslation('investments');
 
   return (
@@ -101,6 +102,14 @@ export function InvestmentList({ investments, language, onDelete }: InvestmentLi
                 ) : null}
                 <div className="mt-2 flex justify-end">
                   <ActionMenu label={t('detail.actions')}>
+                    <button
+                      role="menuitem"
+                      type="button"
+                      onClick={() => onEdit?.(investment)}
+                      className="flex min-h-11 w-full items-center rounded-md px-3 text-sm hover:bg-surface"
+                    >
+                      {t('detail.edit')}
+                    </button>
                     <button
                       role="menuitem"
                       type="button"

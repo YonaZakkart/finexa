@@ -28,6 +28,8 @@ export function PortfolioDetail() {
   const [deletingInvestment, setDeletingInvestment] = useState<Investment | null>(null);
   const investmentCreated = (location.state as { investmentCreated?: boolean } | null)
     ?.investmentCreated;
+  const investmentUpdated = (location.state as { investmentUpdated?: boolean } | null)
+    ?.investmentUpdated;
 
   const portfolio = portfolios.find((item) => item.id === portfolioId);
   const portfolioInvestments = useMemo(
@@ -92,9 +94,9 @@ export function PortfolioDetail() {
         </div>
       </header>
 
-      {investmentCreated ? (
+      {investmentCreated || investmentUpdated ? (
         <p role="status" className="text-sm font-medium text-positive">
-          {t('detail.investmentCreated')}
+          {t(investmentUpdated ? 'detail.investmentUpdated' : 'detail.investmentCreated')}
         </p>
       ) : null}
 
@@ -134,6 +136,9 @@ export function PortfolioDetail() {
         investments={portfolioInvestments}
         language={language}
         onDelete={setDeletingInvestment}
+        onEdit={(investment) =>
+          navigate(`/investments/${investment.portfolioId}/edit/${investment.id}`)
+        }
       />
 
       {balanceOpen ? (

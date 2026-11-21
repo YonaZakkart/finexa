@@ -148,3 +148,41 @@ export async function deleteInvestment(id: string, affectsBalance: boolean): Pro
 
   await useAppStore.getState().sync();
 }
+
+export async function editInvestment(
+  id: string,
+  input: InvestmentInput,
+  affectsBalance: boolean
+): Promise<void> {
+  const normalized = normalizeInvestment(input);
+  assertValidInvestment(normalized);
+
+  await db.transaction('rw', db.portfolios, db.investments, db.transactions, async () => {
+    const existing = await db.investments.get(id);
+
+    if (!existing) {
+      throw new InvestmentError('investmentNotFound');
+    }
+
+    const portfolio = await getPortfolio(existing.portfolioId);
+
+    await updateInvestment(id, {
+      ...normalized,
+      portfolioId: existing.portfolioId,
+      transactionId: existing.transactionId,
+    });
+
+    if (affectsBalance && existing.transactionId) {
+      await db.transactions.update(existing.transactionId, {
+        amount: normalized.depositTotal,
+        date: normalized.date,
+      });
+    }
+
+    if (portfolio) {
+      await putPortfolio({ ...portfolio, updatedAt: new Date().toISOString() });
+    }
+  });
+
+  await useAppStore.getState().sync();
+}
