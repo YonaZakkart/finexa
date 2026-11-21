@@ -2,11 +2,14 @@ import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '@/lib/db';
 import { useAppStore } from '@/stores/app.store';
+import { InvestmentError } from './investments.errors';
 import {
   createPortfolio,
+  deletePortfolio,
   editInvestment,
   registerInvestment,
   updateBalance,
+  updatePortfolio,
 } from './investments.service';
 import { getPortfolioStatus } from './status';
 import { calculatePortfolioTotals } from './totals';
@@ -78,6 +81,94 @@ describe('createPortfolio', () => {
     ).rejects.toMatchObject({ code: 'invalidPortfolioName' });
 
     expect(await db.portfolios.count()).toBe(0);
+  });
+});
+
+describe('updatePortfolio', () => {
+  it('updates the name, type and broker while keeping the balance and creation date', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    await db.portfolios.update(portfolio.id, { currentBalance: 120 });
+
+    await updatePortfolio(portfolio.id, { name: '  NVIDIA  ', type: 'stocks', broker: ' XTB ' });
+
+    const stored = await db.portfolios.get(portfolio.id);
+
+    expect(stored).toMatchObject({
+      name: 'NVIDIA',
+      type: 'stocks',
+      broker: 'XTB',
+      currentBalance: 120,
+      createdAt: portfolio.createdAt,
+    });
+    expect(stored?.updatedAt).not.toBe(portfolio.updatedAt);
+    expect(useAppStore.getState().portfolios[0]).toMatchObject({ name: 'NVIDIA' });
+  });
+
+  it('rejects an invalid portfolio without writing', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+
+    await expect(
+      updatePortfolio(portfolio.id, { name: '   ', type: 'etf', broker: 'Hapi' })
+    ).rejects.toThrow(InvestmentError);
+
+    expect((await db.portfolios.get(portfolio.id))?.name).toBe('VOO');
+  });
+
+  it('rejects a missing portfolio', async () => {
+    await expect(
+      updatePortfolio('missing', { name: 'VOO', type: 'etf', broker: 'Hapi' })
+    ).rejects.toThrow(InvestmentError);
+  });
+});
+
+describe('deletePortfolio', () => {
+  it('rejects a missing portfolio', async () => {
+    await expect(deletePortfolio('missing', true)).rejects.toThrow(InvestmentError);
+  });
+
+  it('deletes the portfolio, its investments and their balance outflows', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    await registerInvestment(investmentInput(portfolio.id));
+
+    await deletePortfolio(portfolio.id, true);
+
+    expect(await db.portfolios.count()).toBe(0);
+    expect(await db.investments.count()).toBe(0);
+    expect(await db.transactions.count()).toBe(0);
+    expect(useAppStore.getState().portfolios).toHaveLength(0);
+    expect(useAppStore.getState().transactions).toHaveLength(0);
+  });
+
+  it('keeps the balance outflow as a generic movement when not reverting it', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    const investment = await registerInvestment(investmentInput(portfolio.id));
+
+    await deletePortfolio(portfolio.id, false);
+
+    const transactions = await db.transactions.toArray();
+
+    expect(await db.portfolios.count()).toBe(0);
+    expect(await db.investments.count()).toBe(0);
+    expect(transactions).toHaveLength(1);
+    expect(transactions[0].id).toBe(investment.transactionId);
+    expect(transactions[0].relatedInvestmentId).toBeUndefined();
+    expect(transactions[0].relatedPortfolioId).toBeUndefined();
+    expect(useAppStore.getState().transactions).toHaveLength(1);
+  });
+
+  it('does not touch transactions of other portfolios', async () => {
+    const keep = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    const remove = await createPortfolio({ name: 'BTC', type: 'crypto', broker: 'Binance' });
+    await registerInvestment(investmentInput(keep.id));
+    await registerInvestment(investmentInput(remove.id));
+
+    await deletePortfolio(remove.id, true);
+
+    const transactions = await db.transactions.toArray();
+
+    expect(transactions).toHaveLength(1);
+    expect(transactions[0].relatedPortfolioId).toBe(keep.id);
+    expect(await db.portfolios.count()).toBe(1);
   });
 });
 

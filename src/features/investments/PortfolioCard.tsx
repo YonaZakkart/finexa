@@ -1,6 +1,7 @@
 import { Briefcase } from 'lucide-react';
 import { useTranslation } from 'react-i18next';
 import { Link } from 'react-router-dom';
+import { ActionMenu } from '@/components/ui/ActionMenu';
 import { Card } from '@/components/ui/Card';
 import type { PortfolioStatus } from '@/features/investments/status';
 import { PORTFOLIO_STATUS_TONE } from '@/features/investments/status-tone';
@@ -15,19 +16,29 @@ export interface PortfolioCardProps {
   totals: PortfolioTotals;
   status: PortfolioStatus;
   language: SupportedLanguage;
+  onEdit?: (portfolio: Portfolio) => void;
+  onDelete?: (portfolio: Portfolio) => void;
 }
 
-export function PortfolioCard({ portfolio, totals, status, language }: PortfolioCardProps) {
+export function PortfolioCard({
+  portfolio,
+  totals,
+  status,
+  language,
+  onEdit,
+  onDelete,
+}: PortfolioCardProps) {
   const { t } = useTranslation('investments');
+  const hasActions = Boolean(onEdit || onDelete);
 
   return (
-    <Card className="p-0 transition-colors hover:bg-surface">
+    <Card className="relative p-0 transition-colors hover:bg-surface">
       <Link
         to={`/investments/${portfolio.id}`}
         aria-label={`${portfolio.name} — ${t('viewPortfolio')}`}
         className="block rounded-lg p-5 focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-accent"
       >
-        <div className="flex items-start justify-between gap-3">
+        <div className={cn('flex items-start justify-between gap-3', hasActions && 'pr-12')}>
           <div className="min-w-0">
             <h3 className="truncate text-lg font-semibold tracking-tight">{portfolio.name}</h3>
             <p className="mt-1 text-xs text-text-muted">
@@ -78,6 +89,33 @@ export function PortfolioCard({ portfolio, totals, status, language }: Portfolio
           </div>
         </dl>
       </Link>
+
+      {hasActions ? (
+        <div className="absolute right-1 top-1">
+          <ActionMenu label={t('actions')}>
+            {onEdit ? (
+              <button
+                role="menuitem"
+                type="button"
+                onClick={() => onEdit(portfolio)}
+                className="flex min-h-11 w-full items-center rounded-md px-3 text-sm hover:bg-surface"
+              >
+                {t('edit')}
+              </button>
+            ) : null}
+            {onDelete ? (
+              <button
+                role="menuitem"
+                type="button"
+                onClick={() => onDelete(portfolio)}
+                className="flex min-h-11 w-full items-center rounded-md px-3 text-sm text-negative hover:bg-surface"
+              >
+                {t('delete')}
+              </button>
+            ) : null}
+          </ActionMenu>
+        </div>
+      ) : null}
     </Card>
   );
 }

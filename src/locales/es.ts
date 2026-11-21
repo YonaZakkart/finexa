@@ -271,6 +271,18 @@ export const es = {
     portfolios: 'Portafolios',
     portfoliosHint: 'Ordenados por nombre',
     newPortfolio: 'Nuevo portafolio',
+    editPortfolio: 'Editar portafolio',
+    actions: 'Acciones',
+    edit: 'Editar',
+    delete: 'Eliminar',
+    updated: 'Portafolio actualizado.',
+    deleted: 'Portafolio eliminado.',
+    deleteTitle: 'Eliminar portafolio',
+    deleteDescription: 'Se eliminará “{{name}}”. Esta acción no se puede deshacer.',
+    deleteWithInvestmentsTitle: 'Eliminar portafolio con inversiones',
+    deleteWithInvestmentsDescription:
+      'Se eliminarán también las inversiones de “{{name}}” ({{total}}). ¿Revertir la salida del balance? Si eliges que no, los movimientos se conservan como salidas genéricas.',
+    deleteError: 'No pudimos eliminar el portafolio. Inténtalo de nuevo.',
     totals: 'Totales',
     totalsHint: 'Todos los portafolios',
     currentBalance: 'Saldo actual',
@@ -316,6 +328,9 @@ export const es = {
     form: {
       description:
         'Datos generales del portafolio. El saldo y las inversiones se registran después.',
+      editDescription:
+        'Actualiza el nombre, el tipo o el broker. El saldo y las inversiones no cambian.',
+      saveChanges: 'Guardar cambios',
       name: 'Nombre',
       namePlaceholder: 'Ej. VOO, NVIDIA, Microsoft',
       type: 'Tipo',
