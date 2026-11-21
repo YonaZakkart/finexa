@@ -9,14 +9,16 @@ import {
   PanelLeftClose,
   PlusCircle,
 } from 'lucide-react';
-import { type RefObject, useEffect, useRef, useState } from 'react';
+import { type RefObject, Suspense, useEffect, useRef, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { Link, NavLink, Outlet, useLocation } from 'react-router-dom';
 import { cn } from '@/lib/cn';
+import { preloadRoute } from '@/lib/route-preload';
 import { Brand } from './Brand';
 import { LanguageSwitcher } from './LanguageSwitcher';
 import { OfflineIndicator } from './OfflineIndicator';
 import { PwaUpdatePrompt } from './PwaUpdatePrompt';
+import { LoadingFallback } from './RouteFallback';
 
 const SIDEBAR_COLLAPSED_KEY = 'finexa:sidebar-collapsed';
 
@@ -126,10 +128,14 @@ function TopNav({
             );
 
             if (module.path && !module.placeholder) {
+              const path = module.path;
+
               return (
                 <Link
                   key={module.id}
-                  to={module.path}
+                  to={path}
+                  onPointerEnter={() => preloadRoute(path)}
+                  onFocus={() => preloadRoute(path)}
                   aria-current={isActive ? 'page' : undefined}
                   className={className}
                 >
@@ -239,11 +245,15 @@ function SidebarContent({
               );
 
               if (module.path && !module.placeholder) {
+                const path = module.path;
+
                 return (
                   <Link
                     key={module.id}
-                    to={module.path}
+                    to={path}
                     onClick={onNavigate}
+                    onPointerEnter={() => preloadRoute(path)}
+                    onFocus={() => preloadRoute(path)}
                     aria-current={isActive ? 'page' : undefined}
                     className={className}
                   >
@@ -280,6 +290,8 @@ function SidebarContent({
               key={item.path}
               to={item.path}
               onClick={onNavigate}
+              onPointerEnter={() => preloadRoute(item.path)}
+              onFocus={() => preloadRoute(item.path)}
               aria-label={t(item.label)}
               aria-current={isActive ? 'page' : undefined}
               className={cn(
@@ -379,6 +391,8 @@ function BottomNav() {
             <NavLink
               key={item.path}
               to={item.path}
+              onPointerEnter={() => preloadRoute(item.path)}
+              onFocus={() => preloadRoute(item.path)}
               className={({ isActive: active }) =>
                 cn(
                   'flex flex-col items-center gap-1 px-2 py-1.5 min-w-[72px] min-h-[44px] transition-colors',
@@ -430,6 +444,21 @@ export function AppShell() {
   }, [sidebarCollapsed]);
 
   useEffect(() => {
+    const preloadPanels = () => {
+      preloadRoute('/');
+      preloadRoute('/investments');
+    };
+
+    if (typeof window.requestIdleCallback === 'function') {
+      const handle = window.requestIdleCallback(preloadPanels, { timeout: 2000 });
+      return () => window.cancelIdleCallback(handle);
+    }
+
+    const handle = window.setTimeout(preloadPanels, 1000);
+    return () => window.clearTimeout(handle);
+  }, []);
+
+  useEffect(() => {
     if (!sidebarOpen) {
       return;
     }
@@ -474,7 +503,9 @@ export function AppShell() {
           )}
         >
           <div className="flex-1">
-            <Outlet />
+            <Suspense fallback={<LoadingFallback />}>
+              <Outlet />
+            </Suspense>
           </div>
           <Footer />
         </div>

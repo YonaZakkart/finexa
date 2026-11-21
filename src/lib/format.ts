@@ -7,11 +7,51 @@ const locales = {
   en: enUS,
 } as const;
 
-export function formatCurrency(amount: number, language: SupportedLanguage): string {
-  return new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US', {
+const currencyFormatters = new Map<SupportedLanguage, Intl.NumberFormat>();
+const compactFormatters = new Map<SupportedLanguage, Intl.NumberFormat>();
+
+function localeOf(language: SupportedLanguage): string {
+  return language === 'es' ? 'es-ES' : 'en-US';
+}
+
+export function getCurrencyFormatter(language: SupportedLanguage): Intl.NumberFormat {
+  const cached = currencyFormatters.get(language);
+
+  if (cached) {
+    return cached;
+  }
+
+  const formatter = new Intl.NumberFormat(localeOf(language), {
     style: 'currency',
     currency: 'USD',
-  }).format(amount);
+  });
+  currencyFormatters.set(language, formatter);
+
+  return formatter;
+}
+
+export function getCompactFormatter(language: SupportedLanguage): Intl.NumberFormat {
+  const cached = compactFormatters.get(language);
+
+  if (cached) {
+    return cached;
+  }
+
+  const formatter = new Intl.NumberFormat(localeOf(language), {
+    notation: 'compact',
+    maximumFractionDigits: 1,
+  });
+  compactFormatters.set(language, formatter);
+
+  return formatter;
+}
+
+export function formatCurrency(amount: number, language: SupportedLanguage): string {
+  return getCurrencyFormatter(language).format(amount);
+}
+
+export function formatCompactNumber(amount: number, language: SupportedLanguage): string {
+  return getCompactFormatter(language).format(amount);
 }
 
 export function formatDate(value: string | Date, language: SupportedLanguage): string {
