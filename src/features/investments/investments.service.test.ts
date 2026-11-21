@@ -2,7 +2,12 @@ import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { db } from '@/lib/db';
 import { useAppStore } from '@/stores/app.store';
-import { createPortfolio, registerInvestment, updateBalance } from './investments.service';
+import {
+  createPortfolio,
+  editInvestment,
+  registerInvestment,
+  updateBalance,
+} from './investments.service';
 import { getPortfolioStatus } from './status';
 import { calculatePortfolioTotals } from './totals';
 import type { InvestmentInput } from './validation';
@@ -227,6 +232,46 @@ describe('registerInvestment', () => {
     });
     expect(getPortfolioStatus(160, totals, true)).toBe('green');
     expect(useAppStore.getState().portfolios[0].currentBalance).toBe(160);
+  });
+
+  it('edits an investment and updates the linked outflow only when requested', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    const created = await registerInvestment(
+      investmentInput(portfolio.id, {
+        depositTotal: 100,
+        availableTotal: 100,
+        purchaseAmount: 100,
+        purchaseCommission: 0,
+      })
+    );
+
+    await editInvestment(
+      created.id,
+      investmentInput(portfolio.id, {
+        depositTotal: 200,
+        availableTotal: 200,
+        purchaseAmount: 150,
+        purchaseCommission: 0,
+      }),
+      true
+    );
+
+    const updated = await db.investments.get(created.id);
+    expect(updated?.depositTotal).toBe(200);
+    expect((await db.transactions.get(created.transactionId ?? ''))?.amount).toBe(200);
+
+    await editInvestment(
+      created.id,
+      investmentInput(portfolio.id, {
+        depositTotal: 300,
+        availableTotal: 300,
+        purchaseAmount: 150,
+        purchaseCommission: 0,
+      }),
+      false
+    );
+
+    expect((await db.transactions.get(created.transactionId ?? ''))?.amount).toBe(200);
   });
 
   it('rejects a purchase above the available total without writing', async () => {

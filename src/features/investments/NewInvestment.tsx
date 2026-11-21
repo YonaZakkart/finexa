@@ -13,7 +13,7 @@ import { roundMoney, toCents } from '@/lib/money';
 import { useAppStore } from '@/stores/app.store';
 import { selectPortfolioInvestments } from '@/stores/selectors';
 import { InvestmentError } from './investments.errors';
-import { registerInvestment } from './investments.service';
+import { editInvestment, registerInvestment } from './investments.service';
 import { calculatePortfolioTotals } from './totals';
 import { type InvestmentInput, MAX_INVESTMENT_NOTE_LENGTH } from './validation';
 
@@ -35,11 +35,16 @@ export function NewInvestment() {
   const { t: tCommon } = useTranslation('common');
   const { t: tErrors } = useTranslation('errors');
   const navigate = useNavigate();
-  const { portfolioId } = useParams<{ portfolioId: string }>();
+  const { portfolioId, investmentId } = useParams<{
+    portfolioId: string;
+    investmentId?: string;
+  }>();
   const portfolios = useAppStore((state) => state.portfolios);
   const investments = useAppStore((state) => state.investments);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
   const portfolio = portfolios.find((item) => item.id === portfolioId);
+  const existing = investments.find((item) => item.id === investmentId);
+  const isEditing = Boolean(existing);
   const portfolioInvestments = useMemo(
     () => (portfolioId ? selectPortfolioInvestments({ portfolios, investments }, portfolioId) : []),
     [portfolios, investments, portfolioId]
@@ -49,18 +54,33 @@ export function NewInvestment() {
     [portfolioInvestments]
   );
 
-  const [depositTotal, setDepositTotal] = useState('');
-  const [bankCommission, setBankCommission] = useState('');
-  const [brokerCommission, setBrokerCommission] = useState('');
-  const [availableTotal, setAvailableTotal] = useState('');
-  const [availableEdited, setAvailableEdited] = useState(false);
-  const [purchaseAmount, setPurchaseAmount] = useState('');
-  const [purchaseCommission, setPurchaseCommission] = useState('');
-  const [commissionFromResidual, setCommissionFromResidual] = useState(false);
-  const [residualDelta, setResidualDelta] = useState('0.00');
-  const [residualEdited, setResidualEdited] = useState(false);
-  const [note, setNote] = useState('');
-  const [date, setDate] = useState(getLocalDateString());
+  const [depositTotal, setDepositTotal] = useState(existing ? String(existing.depositTotal) : '');
+  const [bankCommission, setBankCommission] = useState(
+    existing ? String(existing.bankCommission) : ''
+  );
+  const [brokerCommission, setBrokerCommission] = useState(
+    existing ? String(existing.brokerCommission) : ''
+  );
+  const [availableTotal, setAvailableTotal] = useState(
+    existing ? String(existing.availableTotal) : ''
+  );
+  const [availableEdited, setAvailableEdited] = useState(Boolean(existing));
+  const [purchaseAmount, setPurchaseAmount] = useState(
+    existing ? String(existing.purchaseAmount) : ''
+  );
+  const [purchaseCommission, setPurchaseCommission] = useState(
+    existing ? String(existing.purchaseCommission) : ''
+  );
+  const [commissionFromResidual, setCommissionFromResidual] = useState(
+    existing?.commissionFromResidual ?? false
+  );
+  const [residualDelta, setResidualDelta] = useState(
+    existing ? String(existing.residualDelta) : '0.00'
+  );
+  const [residualEdited, setResidualEdited] = useState(Boolean(existing));
+  const [affectsBalance, setAffectsBalance] = useState(true);
+  const [note, setNote] = useState(existing?.note ?? '');
+  const [date, setDate] = useState(existing?.date ?? getLocalDateString());
   const [error, setError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
@@ -141,7 +161,7 @@ export function NewInvestment() {
     setResidualEdited(false);
   };
 
-  if (!portfolio) {
+  if (!portfolio || (investmentId && !existing)) {
     return (
       <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-5 p-6">
         <header className="flex items-center gap-3">
@@ -153,7 +173,9 @@ export function NewInvestment() {
           >
             <ArrowLeft aria-hidden="true" className="size-5" />
           </button>
-          <h1 className="text-2xl font-semibold tracking-tight">{t('newInvestment.title')}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {t(isEditing ? 'newInvestment.editTitle' : 'newInvestment.title')}
+          </h1>
         </header>
         <EmptyState
           icon={<Briefcase aria-hidden="true" className="size-8" />}
@@ -242,8 +264,13 @@ export function NewInvestment() {
     setError(null);
 
     try {
-      await registerInvestment(input);
-      navigate(`/investments/${portfolio.id}`, { state: { investmentCreated: true } });
+      if (existing) {
+        await editInvestment(existing.id, input, affectsBalance);
+        navigate(`/investments/${portfolio.id}`, { state: { investmentUpdated: true } });
+      } else {
+        await registerInvestment(input);
+        navigate(`/investments/${portfolio.id}`, { state: { investmentCreated: true } });
+      }
     } catch (caught) {
       setError(
         caught instanceof InvestmentError ? tErrors(caught.code) : t('newInvestment.saveError')
@@ -265,7 +292,9 @@ export function NewInvestment() {
           <ArrowLeft aria-hidden="true" className="size-5" />
         </button>
         <div className="min-w-0">
-          <h1 className="text-2xl font-semibold tracking-tight">{t('newInvestment.title')}</h1>
+          <h1 className="text-2xl font-semibold tracking-tight">
+            {t(isEditing ? 'newInvestment.editTitle' : 'newInvestment.title')}
+          </h1>
           <p className="mt-1 text-xs text-text-muted">
             {portfolio.name} · {t(`types.${portfolio.type}`)} · {portfolio.broker}
           </p>
@@ -312,9 +341,14 @@ export function NewInvestment() {
           </div>
           {toAmount(depositTotal) > 0 ? (
             <p className="text-xs text-text-muted">
-              {t('newInvestment.balanceOutflowHint', {
-                amount: formatCurrency(toAmount(depositTotal), language),
-              })}
+              {t(
+                isEditing
+                  ? 'newInvestment.balanceOutflowEditHint'
+                  : 'newInvestment.balanceOutflowHint',
+                {
+                  amount: formatCurrency(toAmount(depositTotal), language),
+                }
+              )}
             </p>
           ) : null}
         </Card>
@@ -489,6 +523,17 @@ export function NewInvestment() {
           </div>
         </Card>
 
+        {existing?.transactionId ? (
+          <Select
+            label={t('newInvestment.affectsBalance')}
+            value={affectsBalance ? 'yes' : 'no'}
+            onChange={(event) => setAffectsBalance(event.target.value === 'yes')}
+          >
+            <option value="yes">{t('newInvestment.affectsBalanceYes')}</option>
+            <option value="no">{t('newInvestment.affectsBalanceNo')}</option>
+          </Select>
+        ) : null}
+
         {error ? (
           <p role="alert" className="text-sm text-negative">
             {error}
@@ -506,7 +551,7 @@ export function NewInvestment() {
             {tCommon('cancel')}
           </Button>
           <Button type="submit" className="sm:flex-1" isLoading={isSubmitting}>
-            {t('newInvestment.save')}
+            {t(isEditing ? 'newInvestment.saveChanges' : 'newInvestment.save')}
           </Button>
         </div>
       </form>

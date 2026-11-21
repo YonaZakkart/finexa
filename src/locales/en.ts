@@ -338,6 +338,8 @@ export const en = {
       date: 'Date',
       updateBalance: 'Update balance',
       investmentCreated: 'Investment recorded.',
+      investmentUpdated: 'Investment updated.',
+      edit: 'Edit',
       balanceOutflow: 'Balance outflow',
       actions: 'Actions',
       delete: 'Delete',
@@ -356,6 +358,13 @@ export const en = {
     },
     newInvestment: {
       title: 'Record investment',
+      editTitle: 'Edit investment',
+      saveChanges: 'Save changes',
+      affectsBalance: 'Update the balance outflow?',
+      affectsBalanceYes: 'Yes, update the outflow',
+      affectsBalanceNo: 'No, keep the current outflow',
+      balanceOutflowEditHint:
+        'The balance outflow will be updated to {{amount}} if you choose Yes.',
       depositSection: 'Deposit to broker',
       depositTotal: 'Total deposit',
       bankCommission: 'Bank commission',
