@@ -56,6 +56,62 @@ export async function createPortfolio(input: PortfolioInput): Promise<Portfolio>
   return portfolio;
 }
 
+export async function updatePortfolio(id: string, input: PortfolioInput): Promise<void> {
+  const normalized = normalizePortfolio(input);
+  assertValidPortfolio(normalized);
+
+  await db.transaction('rw', db.portfolios, async () => {
+    const portfolio = await getPortfolio(id);
+
+    if (!portfolio) {
+      throw new InvestmentError('portfolioNotFound');
+    }
+
+    await putPortfolio({
+      ...portfolio,
+      ...normalized,
+      updatedAt: new Date().toISOString(),
+    });
+  });
+
+  await useAppStore.getState().sync();
+}
+
+export async function deletePortfolio(id: string, affectsBalance: boolean): Promise<void> {
+  await db.transaction('rw', db.portfolios, db.investments, db.transactions, async () => {
+    const portfolio = await getPortfolio(id);
+
+    if (!portfolio) {
+      throw new InvestmentError('portfolioNotFound');
+    }
+
+    const investments = await db.investments.where('portfolioId').equals(id).toArray();
+    const transactionIds = investments
+      .map((investment) => investment.transactionId)
+      .filter((transactionId): transactionId is string => Boolean(transactionId));
+
+    await db.investments.bulkDelete(investments.map((investment) => investment.id));
+
+    if (transactionIds.length > 0) {
+      if (affectsBalance) {
+        await db.transactions.bulkDelete(transactionIds);
+      } else {
+        await db.transactions
+          .where('id')
+          .anyOf(transactionIds)
+          .modify((transaction) => {
+            delete transaction.relatedInvestmentId;
+            delete transaction.relatedPortfolioId;
+          });
+      }
+    }
+
+    await db.portfolios.delete(id);
+  });
+
+  await useAppStore.getState().sync();
+}
+
 export async function updateBalance(portfolioId: string, balance: number): Promise<void> {
   const rounded = roundMoney(balance);
   assertValidBalance(rounded);
