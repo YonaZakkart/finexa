@@ -125,3 +125,26 @@ export async function registerInvestment(input: InvestmentInput): Promise<Invest
   await useAppStore.getState().sync();
   return investment;
 }
+
+export async function deleteInvestment(id: string, affectsBalance: boolean): Promise<void> {
+  await db.transaction('rw', db.portfolios, db.investments, db.transactions, async () => {
+    const investment = await db.investments.get(id);
+
+    if (!investment) {
+      throw new InvestmentError('investmentNotFound');
+    }
+
+    const portfolio = await getPortfolio(investment.portfolioId);
+    await db.investments.delete(id);
+
+    if (affectsBalance && investment.transactionId) {
+      await db.transactions.delete(investment.transactionId);
+    }
+
+    if (portfolio) {
+      await putPortfolio({ ...portfolio, updatedAt: new Date().toISOString() });
+    }
+  });
+
+  await useAppStore.getState().sync();
+}

@@ -117,3 +117,31 @@ export async function payDebt(id: string, affectsBalance: boolean): Promise<void
 
   await useAppStore.getState().sync();
 }
+
+export async function deleteExpense(id: string, affectsBalance: boolean): Promise<void> {
+  await db.transaction('rw', db.transactions, async () => {
+    const current = await db.transactions.get(id);
+
+    if (!current) {
+      throw new TransactionError('transactionNotFound');
+    }
+
+    if (current.type !== 'expense') {
+      throw new TransactionError('notAnExpense');
+    }
+
+    await db.transactions.delete(id);
+
+    if (!affectsBalance) {
+      await createTransaction({
+        type: 'adjustment',
+        direction: 'debit',
+        amount: current.amount,
+        date: current.date,
+        source: 'edit_compensation',
+      });
+    }
+  });
+
+  await useAppStore.getState().sync();
+}
