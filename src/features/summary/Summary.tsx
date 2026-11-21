@@ -1,12 +1,28 @@
+import { lazy, Suspense } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { getLocalDateString, getWeekStart } from '@/lib/date';
 import { useAppStore } from '@/stores/app.store';
-import { DailyChart } from './DailyChart';
 import { DailySummaryCard } from './DailySummaryCard';
-import { WeeklyChart } from './WeeklyChart';
+
+const WeeklyChart = lazy(() =>
+  import('./WeeklyChart').then((module) => ({ default: module.WeeklyChart }))
+);
+const DailyChart = lazy(() =>
+  import('./DailyChart').then((module) => ({ default: module.DailyChart }))
+);
+
+function ChartFallback() {
+  return (
+    <Card className="space-y-4 p-5" aria-busy="true">
+      <Skeleton className="h-4 w-32 rounded-md" />
+      <Skeleton className="h-64 w-full rounded-md" />
+    </Card>
+  );
+}
 
 export function Summary() {
   const { t } = useTranslation('summary');
@@ -49,15 +65,17 @@ export function Summary() {
         </div>
       </Card>
 
-      {view === 'weekly' ? (
-        <WeeklyChart
-          transactions={transactions}
-          weekStart={getWeekStart(today)}
-          language={language}
-        />
-      ) : (
-        <DailyChart expenses={todayExpenses} language={language} />
-      )}
+      <Suspense fallback={<ChartFallback />}>
+        {view === 'weekly' ? (
+          <WeeklyChart
+            transactions={transactions}
+            weekStart={getWeekStart(today)}
+            language={language}
+          />
+        ) : (
+          <DailyChart expenses={todayExpenses} language={language} />
+        )}
+      </Suspense>
     </main>
   );
 }
