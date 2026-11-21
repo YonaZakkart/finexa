@@ -10,7 +10,7 @@ import { MAX_NOTE_LENGTH } from '@/features/balance/validation';
 import { getLocalDateString } from '@/lib/date';
 import { roundMoney } from '@/lib/money';
 
-type MoneyType = 'income' | 'adjustment';
+type MoneyType = 'income' | 'adjustment' | 'investment';
 type MoneyDirection = 'credit' | 'debit';
 
 export function MoneyModal({ onClose }: { onClose: () => void }) {
@@ -19,6 +19,7 @@ export function MoneyModal({ onClose }: { onClose: () => void }) {
   const { t: tErrors } = useTranslation('errors');
   const [type, setType] = useState<MoneyType>('income');
   const [direction, setDirection] = useState<MoneyDirection>('credit');
+  const [affectsBalance, setAffectsBalance] = useState(true);
   const [amount, setAmount] = useState('');
   const [date, setDate] = useState(getLocalDateString);
   const [source, setSource] = useState('');
@@ -51,10 +52,11 @@ export function MoneyModal({ onClose }: { onClose: () => void }) {
     try {
       await record({
         type,
-        direction: type === 'income' ? 'credit' : direction,
+        direction: type === 'income' ? 'credit' : type === 'investment' ? 'debit' : direction,
         amount: roundMoney(parsedAmount),
         date,
         note: source.trim() || undefined,
+        ...(type === 'investment' ? { affectsBalance } : {}),
       });
       onClose();
     } catch (caught) {
@@ -80,6 +82,7 @@ export function MoneyModal({ onClose }: { onClose: () => void }) {
         >
           <option value="income">{t('money.income')}</option>
           <option value="adjustment">{t('money.adjustment')}</option>
+          <option value="investment">{t('money.investment')}</option>
         </Select>
 
         {type === 'adjustment' ? (
@@ -90,6 +93,17 @@ export function MoneyModal({ onClose }: { onClose: () => void }) {
           >
             <option value="credit">{t('money.add')}</option>
             <option value="debit">{t('money.subtract')}</option>
+          </Select>
+        ) : null}
+
+        {type === 'investment' ? (
+          <Select
+            label={t('money.affectsBalance')}
+            value={affectsBalance ? 'yes' : 'no'}
+            onChange={(event) => setAffectsBalance(event.target.value === 'yes')}
+          >
+            <option value="yes">{t('money.affectsBalanceYes')}</option>
+            <option value="no">{t('money.affectsBalanceNo')}</option>
           </Select>
         ) : null}
 

@@ -1,6 +1,7 @@
 import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDebt } from '@/features/debts/debts.repository';
+import { listExpensesByDate } from '@/features/transactions/transactions.repository';
 import { db } from '@/lib/db';
 import { useAppStore } from '@/stores/app.store';
 import { selectBalance, selectNetBalance, selectTotalDebt } from '@/stores/selectors';
@@ -83,6 +84,33 @@ describe('record', () => {
 
     expect(await db.transactions.count()).toBe(0);
     expect(useAppStore.getState().transactions).toHaveLength(0);
+  });
+
+  it('records an investment movement that reduces the balance', async () => {
+    await record({
+      type: 'investment',
+      direction: 'debit',
+      amount: 40,
+      date: DATE,
+      affectsBalance: true,
+    });
+
+    expect(selectBalance(useAppStore.getState())).toBe(-40);
+  });
+
+  it('records an investment movement without touching the balance', async () => {
+    const transaction = await record({
+      type: 'investment',
+      direction: 'debit',
+      amount: 40,
+      date: DATE,
+      affectsBalance: false,
+    });
+
+    expect(transaction.affectsBalance).toBe(false);
+    expect(await db.transactions.count()).toBe(1);
+    expect(selectBalance(useAppStore.getState())).toBe(0);
+    expect(await listExpensesByDate(DATE)).toHaveLength(0);
   });
 
   it('allows only one initial balance', async () => {
