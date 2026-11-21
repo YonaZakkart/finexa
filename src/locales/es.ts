@@ -303,6 +303,7 @@ export const es = {
       date: 'Fecha',
       updateBalance: 'Actualizar saldo',
       investmentCreated: 'Inversión registrada.',
+      balanceOutflow: 'Salida del balance',
       balanceRequiresInvestment: 'Registra al menos una inversión para actualizar el saldo.',
     },
     balance: {
@@ -345,6 +346,7 @@ export const es = {
       notePlaceholder: 'Nota opcional',
       date: 'Fecha',
       save: 'Guardar inversión',
+      balanceOutflowHint: 'Se descontarán {{amount}} del balance actual al guardar.',
       saveError: 'No pudimos guardar la inversión. Inténtalo de nuevo.',
     },
   },

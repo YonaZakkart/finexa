@@ -89,6 +89,14 @@ export function InvestmentList({ investments, language }: InvestmentListProps) {
                     </dd>
                   </div>
                 </dl>
+                {investment.transactionId ? (
+                  <p className="mt-2 text-xs text-text-muted">
+                    {t('detail.balanceOutflow')}:{' '}
+                    <span className="font-semibold tabular-nums text-negative">
+                      {formatCurrency(investment.depositTotal, language)}
+                    </span>
+                  </p>
+                ) : null}
               </li>
             );
           })}

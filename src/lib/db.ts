@@ -17,6 +17,14 @@ db.version(1).stores({
   settings: 'id',
 });
 
+db.version(3).stores({
+  transactions: 'id, date, type, relatedDebtId, relatedInvestmentId, [date+type]',
+  debts: 'id, status, createdAt',
+  settings: 'id',
+  portfolios: 'id, name, type, createdAt',
+  investments: 'id, portfolioId, date, [portfolioId+date]',
+});
+
 db.version(2).stores({
   transactions: 'id, date, type, relatedDebtId, [date+type]',
   debts: 'id, status, createdAt',

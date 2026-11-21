@@ -302,6 +302,7 @@ export const en = {
       date: 'Date',
       updateBalance: 'Update balance',
       investmentCreated: 'Investment recorded.',
+      balanceOutflow: 'Balance outflow',
       balanceRequiresInvestment: 'Record at least one investment to update the balance.',
     },
     balance: {
@@ -344,6 +345,7 @@ export const en = {
       notePlaceholder: 'Optional note',
       date: 'Date',
       save: 'Save investment',
+      balanceOutflowHint: '{{amount}} will be deducted from your current balance when saved.',
       saveError: 'We could not save the investment. Please try again.',
     },
   },
