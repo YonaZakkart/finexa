@@ -25,6 +25,7 @@ const Summary = lazy(() =>
   import('@/features/summary/Summary').then((m) => ({ default: m.Summary }))
 );
 const Debts = lazy(() => import('@/features/debts/Debts').then((m) => ({ default: m.Debts })));
+const Money = lazy(() => import('@/features/money/Money').then((m) => ({ default: m.Money })));
 const Investments = lazy(() =>
   import('@/features/investments/Investments').then((m) => ({ default: m.Investments }))
 );
@@ -139,6 +140,7 @@ function AppRoutes() {
           <Route path="/history" element={<History />} />
           <Route path="/summary" element={<Summary />} />
           <Route path="/debts" element={<Debts />} />
+          <Route path="/money" element={<Money />} />
           <Route path="/investments" element={<Investments />} />
           <Route path="/investments/history" element={<InvestmentHistory />} />
           <Route path="/investments/:portfolioId" element={<PortfolioDetail />} />
