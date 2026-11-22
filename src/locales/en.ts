@@ -309,6 +309,7 @@ export const en = {
       invested: 'Invested',
       empty: 'No balance history yet',
       emptyHint: 'Update the portfolio balance to start recording its evolution.',
+      loadError: 'We could not load the balance history. Please try again.',
     },
     status: {
       neutral: 'No data',

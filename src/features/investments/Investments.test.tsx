@@ -274,6 +274,22 @@ describe('Investments', () => {
     await waitFor(() => expect(deletePortfolioMock).toHaveBeenCalledWith('p1', true));
   });
 
+  it('closes the dialog and reports the error when deleting fails', async () => {
+    const user = userEvent.setup();
+    deletePortfolioMock.mockRejectedValueOnce(new Error('boom'));
+    seed([portfolio({ id: 'p1', name: 'VOO' })], []);
+    renderPage();
+
+    await user.click(screen.getByLabelText('Acciones'));
+    await user.click(screen.getByRole('menuitem', { name: 'Eliminar' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Eliminar' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'No pudimos eliminar el portafolio. Inténtalo de nuevo.'
+    );
+  });
+
   it('asks about the balance when the portfolio has investments', async () => {
     const user = userEvent.setup();
     seed([portfolio({ id: 'p1', name: 'VOO' })], [investment({ id: 'i1', portfolioId: 'p1' })]);

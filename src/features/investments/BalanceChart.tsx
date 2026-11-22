@@ -36,6 +36,7 @@ export function BalanceChart({
 }: BalanceChartProps) {
   const { t } = useTranslation('investments');
   const [snapshots, setSnapshots] = useState<BalanceSnapshot[] | null>(null);
+  const [loadFailed, setLoadFailed] = useState(false);
   const [range, setRange] = useState<ChartRange>(DEFAULT_CHART_RANGE);
   const today = getLocalDateString();
 
@@ -44,6 +45,7 @@ export function BalanceChart({
     let active = true;
 
     setSnapshots(null);
+    setLoadFailed(false);
     listBalanceSnapshots(portfolioId)
       .then((rows) => {
         if (active) {
@@ -53,6 +55,7 @@ export function BalanceChart({
       .catch(() => {
         if (active) {
           setSnapshots([]);
+          setLoadFailed(true);
         }
       });
 
@@ -105,7 +108,11 @@ export function BalanceChart({
         ))}
       </fieldset>
 
-      {snapshots.length === 0 ? (
+      {loadFailed ? (
+        <p role="alert" className="py-6 text-center text-sm text-negative">
+          {t('chart.loadError')}
+        </p>
+      ) : snapshots.length === 0 ? (
         <div className="py-6 text-center">
           <p className="text-sm font-medium">{t('chart.empty')}</p>
           <p className="mt-1 text-sm text-text-muted">{t('chart.emptyHint')}</p>

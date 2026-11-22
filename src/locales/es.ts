@@ -309,6 +309,7 @@ export const es = {
       invested: 'Invertido',
       empty: 'Aún no hay historial de saldo',
       emptyHint: 'Actualiza el saldo del portafolio para empezar a registrar la evolución.',
+      loadError: 'No pudimos cargar el historial de saldo. Inténtalo de nuevo.',
     },
     status: {
       neutral: 'Sin datos',
