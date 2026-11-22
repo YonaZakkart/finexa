@@ -132,6 +132,18 @@ export function Investments() {
     ? investments.filter((investment) => investment.portfolioId === deletingPortfolio.id).length
     : 0;
 
+  const handleEdit = (portfolio: Portfolio) => {
+    setNotice(null);
+    setError(null);
+    setEditingPortfolio(portfolio);
+  };
+
+  const handleDeleteStart = (portfolio: Portfolio) => {
+    setNotice(null);
+    setError(null);
+    setDeletingPortfolio(portfolio);
+  };
+
   const handleDelete = async (affectsBalance: boolean) => {
     if (!deletingPortfolio) {
       return;
@@ -143,6 +155,7 @@ export function Investments() {
       setError(null);
       setNotice(t('deleted'));
     } catch {
+      setDeletingPortfolio(null);
       setError(t('deleteError'));
     }
   };
@@ -213,8 +226,8 @@ export function Investments() {
                   totals={totals}
                   status={status}
                   language={language}
-                  onEdit={setEditingPortfolio}
-                  onDelete={setDeletingPortfolio}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteStart}
                 />
               ))}
             </div>
