@@ -3,16 +3,18 @@
 Personal finance PWA focused on daily expenses, balance, debt control and investment
 portfolio monitoring. Mobile-first, offline-first and installable.
 
-> Status: 0.3.0 — Investment monitoring, history and CRUD.
+> Status: 0.4.0 — PWA performance, investment movements, portfolio CRUD and balance chart.
 
 ## Features
 
 - Daily expenses with categories, history, editing and daily/weekly charts.
 - Balance, debts and optional onboarding.
 - Investment portfolio monitoring: portfolios, deposits, purchases, commissions,
-  residual money, manual balance, history and editing.
-- CRUD for expenses, investments and debts with balance-impact confirmation.
-- Money management panel for income and adjustments.
+  residual money, manual balance, history, editing and a balance evolution chart.
+- CRUD for portfolios, expenses, investments and debts with balance-impact confirmation.
+- Money management panel for income, adjustments and investment movements.
+- Fast panel switching: lazy routes with skeletons, prefetched panels, cached
+  formatters and no per-card backdrop blur.
 - Offline-first PWA, Spanish/English and the glass-dark theme.
 
 ## Stack
