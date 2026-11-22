@@ -1,6 +1,6 @@
 import Dexie from 'dexie';
 import { db } from '@/lib/db';
-import type { Investment, Portfolio } from '@/types';
+import type { BalanceSnapshot, Investment, Portfolio } from '@/types';
 
 export type NewPortfolio = Pick<Portfolio, 'name' | 'type' | 'broker'>;
 export type NewInvestment = Omit<Investment, 'id' | 'createdAt'>;
@@ -63,4 +63,43 @@ export async function listInvestments(portfolioId: string): Promise<Investment[]
 
 export async function countInvestments(portfolioId: string): Promise<number> {
   return db.investments.where('portfolioId').equals(portfolioId).count();
+}
+
+export async function listBalanceSnapshots(portfolioId: string): Promise<BalanceSnapshot[]> {
+  const rows = await db.balanceSnapshots
+    .where('[portfolioId+date]')
+    .between([portfolioId, Dexie.minKey], [portfolioId, Dexie.maxKey])
+    .toArray();
+
+  return rows.sort((a, b) => a.date.localeCompare(b.date));
+}
+
+export async function upsertBalanceSnapshot(
+  portfolioId: string,
+  date: string,
+  balance: number
+): Promise<BalanceSnapshot> {
+  const existing = await db.balanceSnapshots
+    .where('[portfolioId+date]')
+    .equals([portfolioId, date])
+    .first();
+  const now = new Date().toISOString();
+
+  if (existing) {
+    const updated: BalanceSnapshot = { ...existing, balance, updatedAt: now };
+    await db.balanceSnapshots.put(updated);
+    return updated;
+  }
+
+  const snapshot: BalanceSnapshot = {
+    id: crypto.randomUUID(),
+    portfolioId,
+    date,
+    balance,
+    createdAt: now,
+    updatedAt: now,
+  };
+  await db.balanceSnapshots.add(snapshot);
+
+  return snapshot;
 }
