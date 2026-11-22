@@ -1,10 +1,12 @@
 import { ArrowLeft, Briefcase, PlusCircle, Wallet } from 'lucide-react';
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { useTranslation } from 'react-i18next';
 import { useLocation, useNavigate, useParams } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
+import { Card } from '@/components/ui/Card';
 import { DeleteBalanceDialog } from '@/components/ui/DeleteBalanceDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
+import { Skeleton } from '@/components/ui/Skeleton';
 import { deleteInvestment } from '@/features/investments/investments.service';
 import { getPortfolioStatus } from '@/features/investments/status';
 import { calculatePortfolioTotals } from '@/features/investments/totals';
@@ -14,6 +16,19 @@ import type { Investment } from '@/types';
 import { InvestmentList } from './InvestmentList';
 import { PortfolioSummary } from './PortfolioSummary';
 import { UpdateBalanceModal } from './UpdateBalanceModal';
+
+const BalanceChart = lazy(() =>
+  import('./BalanceChart').then((module) => ({ default: module.BalanceChart }))
+);
+
+function ChartSkeleton() {
+  return (
+    <Card className="space-y-4 p-5" aria-busy="true">
+      <Skeleton className="h-4 w-32 rounded-md" />
+      <Skeleton className="h-56 w-full rounded-md" />
+    </Card>
+  );
+}
 
 export function PortfolioDetail() {
   const { t } = useTranslation('investments');
@@ -107,6 +122,15 @@ export function PortfolioDetail() {
         investmentCount={portfolioInvestments.length}
         language={language}
       />
+
+      <Suspense fallback={<ChartSkeleton />}>
+        <BalanceChart
+          portfolioId={portfolio.id}
+          investments={portfolioInvestments}
+          language={language}
+          balanceUpdatedAt={portfolio.balanceUpdatedAt}
+        />
+      </Suspense>
 
       <div className="flex flex-col gap-3 sm:flex-row">
         <div className="flex flex-col gap-1">
