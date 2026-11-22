@@ -4,6 +4,8 @@ import { useTranslation } from 'react-i18next';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/Button';
 import { Card } from '@/components/ui/Card';
+import { ConfirmDialog } from '@/components/ui/ConfirmDialog';
+import { DeleteBalanceDialog } from '@/components/ui/DeleteBalanceDialog';
 import { EmptyState } from '@/components/ui/EmptyState';
 import { getPortfolioStatus, type PortfolioStatus } from '@/features/investments/status';
 import {
@@ -17,6 +19,7 @@ import { formatCurrency } from '@/lib/format';
 import type { SupportedLanguage } from '@/lib/language';
 import { useAppStore } from '@/stores/app.store';
 import type { Investment, Portfolio } from '@/types';
+import { deletePortfolio } from './investments.service';
 import { NewPortfolioModal } from './NewPortfolioModal';
 import { PortfolioCard } from './PortfolioCard';
 
@@ -108,6 +111,10 @@ export function Investments() {
   const investments = useAppStore((state) => state.investments);
   const language = useAppStore((state) => state.settings?.language ?? 'es');
   const [newPortfolioOpen, setNewPortfolioOpen] = useState(false);
+  const [editingPortfolio, setEditingPortfolio] = useState<Portfolio | null>(null);
+  const [deletingPortfolio, setDeletingPortfolio] = useState<Portfolio | null>(null);
+  const [notice, setNotice] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   const sortedPortfolios = useMemo(
     () => [...portfolios].sort((a, b) => a.name.localeCompare(b.name, language)),
@@ -121,6 +128,37 @@ export function Investments() {
     () => calculateGlobalTotals(portfolios, investments),
     [portfolios, investments]
   );
+  const deletingInvestmentCount = deletingPortfolio
+    ? investments.filter((investment) => investment.portfolioId === deletingPortfolio.id).length
+    : 0;
+
+  const handleEdit = (portfolio: Portfolio) => {
+    setNotice(null);
+    setError(null);
+    setEditingPortfolio(portfolio);
+  };
+
+  const handleDeleteStart = (portfolio: Portfolio) => {
+    setNotice(null);
+    setError(null);
+    setDeletingPortfolio(portfolio);
+  };
+
+  const handleDelete = async (affectsBalance: boolean) => {
+    if (!deletingPortfolio) {
+      return;
+    }
+
+    try {
+      await deletePortfolio(deletingPortfolio.id, affectsBalance);
+      setDeletingPortfolio(null);
+      setError(null);
+      setNotice(t('deleted'));
+    } catch {
+      setDeletingPortfolio(null);
+      setError(t('deleteError'));
+    }
+  };
 
   return (
     <main className="mx-auto flex min-h-full w-full max-w-3xl flex-col gap-5 p-6">
@@ -145,6 +183,18 @@ export function Investments() {
           ) : null}
         </div>
       </header>
+
+      {notice ? (
+        <p role="status" className="text-sm font-medium text-positive">
+          {notice}
+        </p>
+      ) : null}
+
+      {error ? (
+        <p role="alert" className="text-sm text-negative">
+          {error}
+        </p>
+      ) : null}
 
       {portfolios.length === 0 ? (
         <EmptyState
@@ -176,6 +226,8 @@ export function Investments() {
                   totals={totals}
                   status={status}
                   language={language}
+                  onEdit={handleEdit}
+                  onDelete={handleDeleteStart}
                 />
               ))}
             </div>
@@ -184,6 +236,39 @@ export function Investments() {
       )}
 
       {newPortfolioOpen ? <NewPortfolioModal onClose={() => setNewPortfolioOpen(false)} /> : null}
+
+      {editingPortfolio ? (
+        <NewPortfolioModal
+          portfolio={editingPortfolio}
+          onClose={() => setEditingPortfolio(null)}
+          onSaved={() => setNotice(t('updated'))}
+        />
+      ) : null}
+
+      {deletingPortfolio && deletingInvestmentCount === 0 ? (
+        <ConfirmDialog
+          open
+          title={t('deleteTitle')}
+          description={t('deleteDescription', { name: deletingPortfolio.name })}
+          confirmLabel={t('delete')}
+          cancelLabel={tCommon('cancel')}
+          tone="danger"
+          onConfirm={() => void handleDelete(true)}
+          onCancel={() => setDeletingPortfolio(null)}
+        />
+      ) : null}
+
+      {deletingPortfolio && deletingInvestmentCount > 0 ? (
+        <DeleteBalanceDialog
+          title={t('deleteWithInvestmentsTitle')}
+          description={t('deleteWithInvestmentsDescription', {
+            name: deletingPortfolio.name,
+            total: deletingInvestmentCount,
+          })}
+          onClose={() => setDeletingPortfolio(null)}
+          onConfirm={handleDelete}
+        />
+      ) : null}
     </main>
   );
 }

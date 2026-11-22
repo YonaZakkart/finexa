@@ -44,6 +44,15 @@ export interface Investment {
   createdAt: string;
 }
 
+export interface BalanceSnapshot {
+  id: string;
+  portfolioId: string;
+  date: string;
+  balance: number;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface Debt {
   id: string;
   name: string;
@@ -68,6 +77,7 @@ export interface Transaction {
   relatedInvestmentId?: string;
   relatedPortfolioId?: string;
   source?: TransactionSource;
+  affectsBalance?: boolean;
 }
 
 export interface Settings {

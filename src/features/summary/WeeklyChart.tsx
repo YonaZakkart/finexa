@@ -10,7 +10,7 @@ import {
   YAxis,
 } from 'recharts';
 import { Card } from '@/components/ui/Card';
-import { formatCurrency } from '@/lib/format';
+import { formatCompactNumber, formatCurrency } from '@/lib/format';
 import type { Language, Transaction } from '@/types';
 import { calculateWeeklyChartData } from './weekly-chart';
 
@@ -26,10 +26,6 @@ export function WeeklyChart({
   const { t } = useTranslation('summary');
   const { t: tCategories } = useTranslation('categories');
   const data = calculateWeeklyChartData(transactions, weekStart, language);
-  const compact = new Intl.NumberFormat(language === 'es' ? 'es-ES' : 'en-US', {
-    notation: 'compact',
-    maximumFractionDigits: 1,
-  });
 
   if (data.categories.length === 0) {
     return (
@@ -58,7 +54,7 @@ export function WeeklyChart({
             <YAxis
               width={48}
               tick={{ fill: 'var(--color-text-muted)', fontSize: 12 }}
-              tickFormatter={(value) => compact.format(Number(value))}
+              tickFormatter={(value) => formatCompactNumber(Number(value), language)}
             />
             <Tooltip
               contentStyle={{

@@ -1,5 +1,6 @@
 import { render, screen } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
+import { type ComponentType, lazy } from 'react';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
 import { beforeEach, describe, expect, it } from 'vitest';
 import { AppShell } from './AppShell';
@@ -11,6 +12,20 @@ function renderShell(initialEntries: string[] = ['/']) {
         <Route element={<AppShell />}>
           <Route index element={<div>Content</div>} />
           <Route path="investments" element={<div>Investments content</div>} />
+        </Route>
+      </Routes>
+    </MemoryRouter>
+  );
+}
+
+const PendingPanel = lazy(() => new Promise<{ default: ComponentType }>(() => undefined));
+
+function renderPendingShell() {
+  return render(
+    <MemoryRouter initialEntries={['/pending']}>
+      <Routes>
+        <Route element={<AppShell />}>
+          <Route path="pending" element={<PendingPanel />} />
         </Route>
       </Routes>
     </MemoryRouter>
@@ -114,5 +129,25 @@ describe('AppShell', () => {
     expect(
       screen.queryByRole('navigation', { name: 'Navegación inferior' })
     ).not.toBeInTheDocument();
+  });
+
+  it('keeps the shell mounted while a lazy panel is loading', () => {
+    renderPendingShell();
+
+    expect(screen.getByRole('link', { name: 'Saltar al contenido' })).toBeInTheDocument();
+    expect(screen.getByRole('navigation', { name: 'Navegación principal' })).toBeInTheDocument();
+    expect(document.querySelector('[aria-busy="true"]')).not.toBeNull();
+  });
+
+  it('keeps the same shell when navigating between panels', async () => {
+    const user = userEvent.setup();
+    renderShell();
+
+    const header = document.querySelector('header');
+
+    await user.click(screen.getByRole('link', { name: 'Inversiones' }));
+
+    expect(screen.getByText('Investments content')).toBeInTheDocument();
+    expect(document.querySelector('header')).toBe(header);
   });
 });

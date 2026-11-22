@@ -1,11 +1,20 @@
-import { render, screen, within } from '@testing-library/react';
+import { render, screen, waitFor, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDefaultSettings } from '@/features/settings/settings.service';
 import { useAppStore } from '@/stores/app.store';
 import type { Investment, Portfolio } from '@/types';
 import { Investments } from './Investments';
+import { deletePortfolio } from './investments.service';
+
+vi.mock('./investments.service', () => ({
+  createPortfolio: vi.fn(),
+  updatePortfolio: vi.fn(),
+  deletePortfolio: vi.fn(),
+}));
+
+const deletePortfolioMock = vi.mocked(deletePortfolio);
 
 function portfolio(overrides: Partial<Portfolio> = {}): Portfolio {
   return {
@@ -65,6 +74,8 @@ function cardForPortfolio(name: string): HTMLElement {
 
 beforeEach(() => {
   useAppStore.getState().reset();
+  deletePortfolioMock.mockReset();
+  deletePortfolioMock.mockResolvedValue(undefined);
 });
 
 afterEach(() => {
@@ -219,6 +230,81 @@ describe('Investments', () => {
     expect(within(cardForPortfolio('Bonds')).getAllByText(/^100,00\s*US\$$/)[0]).toHaveClass(
       'text-warning'
     );
+  });
+
+  it('keeps the actions menu outside the portfolio link', () => {
+    seed([portfolio({ id: 'p1', name: 'VOO' })], []);
+    renderPage();
+
+    const link = screen.getByRole('link', { name: /^VOO —/ });
+
+    expect(link.querySelector('button')).toBeNull();
+    expect(screen.getByLabelText('Acciones')).toBeInTheDocument();
+  });
+
+  it('opens the edit modal from the card menu', async () => {
+    const user = userEvent.setup();
+    seed([portfolio({ id: 'p1', name: 'VOO' })], []);
+    renderPage();
+
+    await user.click(screen.getByLabelText('Acciones'));
+    await user.click(screen.getByRole('menuitem', { name: 'Editar' }));
+
+    const dialog = screen.getByRole('dialog');
+
+    expect(within(dialog).getByRole('heading', { name: 'Editar portafolio' })).toBeInTheDocument();
+    expect(within(dialog).getByLabelText('Nombre')).toHaveValue('VOO');
+  });
+
+  it('deletes an empty portfolio after a single confirmation', async () => {
+    const user = userEvent.setup();
+    seed([portfolio({ id: 'p1', name: 'VOO' })], []);
+    renderPage();
+
+    await user.click(screen.getByLabelText('Acciones'));
+    await user.click(screen.getByRole('menuitem', { name: 'Eliminar' }));
+
+    const dialog = screen.getByRole('dialog');
+
+    expect(within(dialog).getByText(/Se eliminará “VOO”/)).toBeInTheDocument();
+    expect(within(dialog).queryByText(/inversiones/)).not.toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'Eliminar' }));
+
+    await waitFor(() => expect(deletePortfolioMock).toHaveBeenCalledWith('p1', true));
+  });
+
+  it('closes the dialog and reports the error when deleting fails', async () => {
+    const user = userEvent.setup();
+    deletePortfolioMock.mockRejectedValueOnce(new Error('boom'));
+    seed([portfolio({ id: 'p1', name: 'VOO' })], []);
+    renderPage();
+
+    await user.click(screen.getByLabelText('Acciones'));
+    await user.click(screen.getByRole('menuitem', { name: 'Eliminar' }));
+    await user.click(within(screen.getByRole('dialog')).getByRole('button', { name: 'Eliminar' }));
+
+    await waitFor(() => expect(screen.queryByRole('dialog')).not.toBeInTheDocument());
+    expect(screen.getByRole('alert')).toHaveTextContent(
+      'No pudimos eliminar el portafolio. Inténtalo de nuevo.'
+    );
+  });
+
+  it('asks about the balance when the portfolio has investments', async () => {
+    const user = userEvent.setup();
+    seed([portfolio({ id: 'p1', name: 'VOO' })], [investment({ id: 'i1', portfolioId: 'p1' })]);
+    renderPage();
+
+    await user.click(screen.getByLabelText('Acciones'));
+    await user.click(screen.getByRole('menuitem', { name: 'Eliminar' }));
+
+    const dialog = screen.getByRole('dialog');
+
+    expect(within(dialog).getByText(/inversiones de “VOO” \(1\)/)).toBeInTheDocument();
+
+    await user.click(within(dialog).getByRole('button', { name: 'No, mantener balance' }));
+
+    await waitFor(() => expect(deletePortfolioMock).toHaveBeenCalledWith('p1', false));
   });
 
   it('keeps the invested, commissions and residual labels on each card', () => {
