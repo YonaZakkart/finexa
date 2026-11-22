@@ -66,6 +66,10 @@ export function formatWeekday(value: string, language: SupportedLanguage): strin
   return formatDateFns(toLocalDate(value), 'EEE', { locale: locales[language] });
 }
 
+export function formatShortDate(value: string, language: SupportedLanguage): string {
+  return formatDateFns(toLocalDate(value), 'd MMM', { locale: locales[language] });
+}
+
 function toLocalDate(value: string | Date): Date {
   if (value instanceof Date) {
     return value;

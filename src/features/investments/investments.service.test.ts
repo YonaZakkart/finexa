@@ -1,8 +1,10 @@
 import 'fake-indexeddb/auto';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { getLocalDateString } from '@/lib/date';
 import { db } from '@/lib/db';
 import { useAppStore } from '@/stores/app.store';
 import { InvestmentError } from './investments.errors';
+import { listBalanceSnapshots, upsertBalanceSnapshot } from './investments.repository';
 import {
   createPortfolio,
   deletePortfolio,
@@ -126,6 +128,17 @@ describe('deletePortfolio', () => {
     await expect(deletePortfolio('missing', true)).rejects.toThrow(InvestmentError);
   });
 
+  it('deletes the balance snapshots of the portfolio', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    await upsertBalanceSnapshot(portfolio.id, '2020-01-01', 100);
+    await upsertBalanceSnapshot(portfolio.id, '2020-01-02', 120);
+
+    await deletePortfolio(portfolio.id, true);
+
+    expect(await listBalanceSnapshots(portfolio.id)).toHaveLength(0);
+    expect(await db.balanceSnapshots.count()).toBe(0);
+  });
+
   it('deletes the portfolio, its investments and their balance outflows', async () => {
     const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
     await registerInvestment(investmentInput(portfolio.id));
@@ -169,6 +182,45 @@ describe('deletePortfolio', () => {
     expect(transactions).toHaveLength(1);
     expect(transactions[0].relatedPortfolioId).toBe(keep.id);
     expect(await db.portfolios.count()).toBe(1);
+  });
+});
+
+describe('updateBalance snapshots', () => {
+  it('stores one snapshot per day and updates it when the balance changes again', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    await registerInvestment(investmentInput(portfolio.id));
+
+    await updateBalance(portfolio.id, 120);
+    const first = await listBalanceSnapshots(portfolio.id);
+
+    expect(first).toHaveLength(1);
+    expect(first[0]).toMatchObject({ balance: 120, date: getLocalDateString() });
+
+    await updateBalance(portfolio.id, 130);
+    const second = await listBalanceSnapshots(portfolio.id);
+
+    expect(second).toHaveLength(1);
+    expect(second[0]).toMatchObject({ id: first[0].id, balance: 130 });
+  });
+
+  it('keeps snapshots from previous days', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+    await registerInvestment(investmentInput(portfolio.id));
+    await upsertBalanceSnapshot(portfolio.id, '2020-01-01', 90);
+
+    await updateBalance(portfolio.id, 140);
+
+    const snapshots = await listBalanceSnapshots(portfolio.id);
+
+    expect(snapshots).toHaveLength(2);
+    expect(snapshots.map((snapshot) => snapshot.balance)).toEqual([90, 140]);
+  });
+
+  it('does not create a snapshot when the update is rejected', async () => {
+    const portfolio = await createPortfolio({ name: 'VOO', type: 'etf', broker: 'Hapi' });
+
+    await expect(updateBalance(portfolio.id, 100)).rejects.toThrow(InvestmentError);
+    expect(await db.balanceSnapshots.count()).toBe(0);
   });
 });
 

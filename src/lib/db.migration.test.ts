@@ -61,7 +61,7 @@ describe('Dexie v1 to v2 migration', () => {
   it('upgrades the schema and preserves the MVP data', async () => {
     await db.open();
 
-    expect(db.verno).toBe(3);
+    expect(db.verno).toBe(4);
     expect(await db.transactions.count()).toBe(1);
     expect(await db.debts.count()).toBe(1);
     expect(await db.settings.count()).toBe(1);
@@ -70,11 +70,12 @@ describe('Dexie v1 to v2 migration', () => {
     expect((await db.settings.get('app'))?.language).toBe('es');
   });
 
-  it('creates empty portfolios and investments tables', async () => {
+  it('creates empty portfolios, investments and balance snapshots tables', async () => {
     await db.open();
 
     expect(await db.portfolios.count()).toBe(0);
     expect(await db.investments.count()).toBe(0);
+    expect(await db.balanceSnapshots.count()).toBe(0);
   });
 
   it('accepts writes to the new tables after the upgrade', async () => {
@@ -107,5 +108,21 @@ describe('Dexie v1 to v2 migration', () => {
 
     expect(await db.portfolios.count()).toBe(1);
     expect(await db.investments.count()).toBe(1);
+  });
+
+  it('accepts balance snapshots after the upgrade', async () => {
+    await db.open();
+    const now = new Date().toISOString();
+
+    await db.balanceSnapshots.add({
+      id: 'snapshot-1',
+      portfolioId: 'portfolio-1',
+      date: '2026-11-21',
+      balance: 150,
+      createdAt: now,
+      updatedAt: now,
+    });
+
+    expect(await db.balanceSnapshots.count()).toBe(1);
   });
 });

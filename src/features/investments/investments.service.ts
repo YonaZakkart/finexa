@@ -1,5 +1,6 @@
 import { assertValidTransaction } from '@/features/balance/validation';
 import { createTransaction } from '@/features/transactions/transactions.repository';
+import { getLocalDateString } from '@/lib/date';
 import { db } from '@/lib/db';
 import { roundMoney } from '@/lib/money';
 import { useAppStore } from '@/stores/app.store';
@@ -12,6 +13,7 @@ import {
   getPortfolio,
   putPortfolio,
   updateInvestment,
+  upsertBalanceSnapshot,
 } from './investments.repository';
 import {
   assertCanUpdateBalance,
@@ -78,36 +80,44 @@ export async function updatePortfolio(id: string, input: PortfolioInput): Promis
 }
 
 export async function deletePortfolio(id: string, affectsBalance: boolean): Promise<void> {
-  await db.transaction('rw', db.portfolios, db.investments, db.transactions, async () => {
-    const portfolio = await getPortfolio(id);
+  await db.transaction(
+    'rw',
+    db.portfolios,
+    db.investments,
+    db.transactions,
+    db.balanceSnapshots,
+    async () => {
+      const portfolio = await getPortfolio(id);
 
-    if (!portfolio) {
-      throw new InvestmentError('portfolioNotFound');
-    }
-
-    const investments = await db.investments.where('portfolioId').equals(id).toArray();
-    const transactionIds = investments
-      .map((investment) => investment.transactionId)
-      .filter((transactionId): transactionId is string => Boolean(transactionId));
-
-    await db.investments.bulkDelete(investments.map((investment) => investment.id));
-
-    if (transactionIds.length > 0) {
-      if (affectsBalance) {
-        await db.transactions.bulkDelete(transactionIds);
-      } else {
-        await db.transactions
-          .where('id')
-          .anyOf(transactionIds)
-          .modify((transaction) => {
-            delete transaction.relatedInvestmentId;
-            delete transaction.relatedPortfolioId;
-          });
+      if (!portfolio) {
+        throw new InvestmentError('portfolioNotFound');
       }
-    }
 
-    await db.portfolios.delete(id);
-  });
+      const investments = await db.investments.where('portfolioId').equals(id).toArray();
+      const transactionIds = investments
+        .map((investment) => investment.transactionId)
+        .filter((transactionId): transactionId is string => Boolean(transactionId));
+
+      await db.investments.bulkDelete(investments.map((investment) => investment.id));
+
+      if (transactionIds.length > 0) {
+        if (affectsBalance) {
+          await db.transactions.bulkDelete(transactionIds);
+        } else {
+          await db.transactions
+            .where('id')
+            .anyOf(transactionIds)
+            .modify((transaction) => {
+              delete transaction.relatedInvestmentId;
+              delete transaction.relatedPortfolioId;
+            });
+        }
+      }
+
+      await db.balanceSnapshots.where('portfolioId').equals(id).delete();
+      await db.portfolios.delete(id);
+    }
+  );
 
   await useAppStore.getState().sync();
 }
@@ -116,7 +126,7 @@ export async function updateBalance(portfolioId: string, balance: number): Promi
   const rounded = roundMoney(balance);
   assertValidBalance(rounded);
 
-  await db.transaction('rw', db.portfolios, db.investments, async () => {
+  await db.transaction('rw', db.portfolios, db.investments, db.balanceSnapshots, async () => {
     const portfolio = await getPortfolio(portfolioId);
 
     if (!portfolio) {
@@ -133,6 +143,7 @@ export async function updateBalance(portfolioId: string, balance: number): Promi
       balanceUpdatedAt: now,
       updatedAt: now,
     });
+    await upsertBalanceSnapshot(portfolioId, getLocalDateString(), rounded);
   });
 
   await useAppStore.getState().sync();

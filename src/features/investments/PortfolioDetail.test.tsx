@@ -1,12 +1,16 @@
 import { render, screen, within } from '@testing-library/react';
 import userEvent from '@testing-library/user-event';
 import { MemoryRouter, Route, Routes } from 'react-router-dom';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createDefaultSettings } from '@/features/settings/settings.service';
 import { formatDate } from '@/lib/format';
 import { useAppStore } from '@/stores/app.store';
 import type { Investment, Portfolio } from '@/types';
 import { PortfolioDetail } from './PortfolioDetail';
+
+vi.mock('./BalanceChart', () => ({
+  BalanceChart: () => <div>Balance chart</div>,
+}));
 
 function portfolio(overrides: Partial<Portfolio> = {}): Portfolio {
   return {
@@ -74,6 +78,13 @@ afterEach(() => {
 });
 
 describe('PortfolioDetail', () => {
+  it('renders the balance chart section with its empty state', async () => {
+    seed([portfolio({ currentBalance: 100 })], [investment()]);
+    renderDetail();
+
+    expect(await screen.findByText('Balance chart')).toBeInTheDocument();
+  });
+
   it('shows the summary, status and investment list', () => {
     seed(
       [portfolio({ currentBalance: 151, balanceUpdatedAt: '2026-11-18T12:00:00.000Z' })],
